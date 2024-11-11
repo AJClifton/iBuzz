@@ -9,10 +9,9 @@ class Database:
     database_lock = threading.Lock()
 
     def __init__(self):
-        if not os.path.isfile(self.database_path):
-            pass
+        database_exists = os.path.isfile(self.database_path)
         self.connection = sqlite3.connect(self.database_path, check_same_thread=False)
-        if False:
+        if not database_exists:
             self.connection.execute("""CREATE TABLE Data (
                                     SerNo	INTEGER,
                                     SeqNo	INTEGER,
