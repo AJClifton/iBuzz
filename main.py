@@ -61,7 +61,7 @@ def signup_post():
     password_repeat = flask.request.form.get('password_repeat')
     if password != password_repeat:
         return flask.abort(400)
-    login_db.add_user(email, password)
+    login_db.add_user("NameHere", email, password)
     return flask.redirect('/login')
 
 
