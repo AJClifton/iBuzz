@@ -81,3 +81,8 @@ def dashboard():
 @app.route('/templates/<path:path>')
 def send_report(path):
     return flask.send_from_directory('templates', path)
+
+
+@app.route('/data/<path:path>')
+def fetch_data(path):
+    return db.fetch_data(path)
