@@ -114,7 +114,7 @@
 </head>
 
 
-<body onload="get_data('Outside_temp')">
+<body onload="get_sensor_names()">
 
 <svg xmlns="http://www.w3.org/2000/svg" class="d-none">
   <symbol id="calendar3" viewBox="0 0 16 16">
@@ -233,6 +233,23 @@
                 Integrations
               </a>
             </li>
+            <li>
+              <div class="dropdown">
+                <button class="btn btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                  Add Sensor
+                </button>
+                <div class="dropdown-menu">
+                  <div class="d-block position-static pt-0 mx-0 rounded-3 shadow overflow-hidden w-280px" data-bs-theme="light">
+                    <form class="dropdown-item p-2 mb-2 bg-body-tertiary border-bottom">
+                      <input type="search" class="form-control" autocomplete="false" placeholder="Type to filter...">
+                    </form>
+                      <ul class="list-unstyled mb-0" id="sensor_add_dropdown">
+
+                      </ul>
+                  </div>
+              </div>
+                </div>
+            </li>
           </ul>
 
           <h6 class="sidebar-heading d-flex justify-content-between align-items-center px-3 mt-4 mb-1 text-body-secondary text-uppercase">
@@ -305,134 +322,6 @@
 
       <canvas class="my-4 w-100" id="myChart" width="900" height="380"></canvas>
 
-      <h2>Section title</h2>
-      <div class="table-responsive small">
-        <table class="table table-striped table-sm">
-          <thead>
-          <tr>
-            <th scope="col">#</th>
-            <th scope="col">Header</th>
-            <th scope="col">Header</th>
-            <th scope="col">Header</th>
-            <th scope="col">Header</th>
-          </tr>
-          </thead>
-          <tbody>
-          <tr>
-            <td>1,001</td>
-            <td>random</td>
-            <td>data</td>
-            <td>placeholder</td>
-            <td>text</td>
-          </tr>
-          <tr>
-            <td>1,002</td>
-            <td>placeholder</td>
-            <td>irrelevant</td>
-            <td>visual</td>
-            <td>layout</td>
-          </tr>
-          <tr>
-            <td>1,003</td>
-            <td>data</td>
-            <td>rich</td>
-            <td>dashboard</td>
-            <td>tabular</td>
-          </tr>
-          <tr>
-            <td>1,003</td>
-            <td>information</td>
-            <td>placeholder</td>
-            <td>illustrative</td>
-            <td>data</td>
-          </tr>
-          <tr>
-            <td>1,004</td>
-            <td>text</td>
-            <td>random</td>
-            <td>layout</td>
-            <td>dashboard</td>
-          </tr>
-          <tr>
-            <td>1,005</td>
-            <td>dashboard</td>
-            <td>irrelevant</td>
-            <td>text</td>
-            <td>placeholder</td>
-          </tr>
-          <tr>
-            <td>1,006</td>
-            <td>dashboard</td>
-            <td>illustrative</td>
-            <td>rich</td>
-            <td>data</td>
-          </tr>
-          <tr>
-            <td>1,007</td>
-            <td>placeholder</td>
-            <td>tabular</td>
-            <td>information</td>
-            <td>irrelevant</td>
-          </tr>
-          <tr>
-            <td>1,008</td>
-            <td>random</td>
-            <td>data</td>
-            <td>placeholder</td>
-            <td>text</td>
-          </tr>
-          <tr>
-            <td>1,009</td>
-            <td>placeholder</td>
-            <td>irrelevant</td>
-            <td>visual</td>
-            <td>layout</td>
-          </tr>
-          <tr>
-            <td>1,010</td>
-            <td>data</td>
-            <td>rich</td>
-            <td>dashboard</td>
-            <td>tabular</td>
-          </tr>
-          <tr>
-            <td>1,011</td>
-            <td>information</td>
-            <td>placeholder</td>
-            <td>illustrative</td>
-            <td>data</td>
-          </tr>
-          <tr>
-            <td>1,012</td>
-            <td>text</td>
-            <td>placeholder</td>
-            <td>layout</td>
-            <td>dashboard</td>
-          </tr>
-          <tr>
-            <td>1,013</td>
-            <td>dashboard</td>
-            <td>irrelevant</td>
-            <td>text</td>
-            <td>visual</td>
-          </tr>
-          <tr>
-            <td>1,014</td>
-            <td>dashboard</td>
-            <td>illustrative</td>
-            <td>rich</td>
-            <td>data</td>
-          </tr>
-          <tr>
-            <td>1,015</td>
-            <td>random</td>
-            <td>tabular</td>
-            <td>information</td>
-            <td>text</td>
-          </tr>
-          </tbody>
-        </table>
-      </div>
     </main>
   </div>
 </div>
@@ -446,6 +335,10 @@
 
 
   let fetched_data = {}
+  const ctx = document.getElementById('myChart')
+  let myChart = new Chart(ctx)
+
+  const aboveValue = (ctx, value, return_value) => ctx.p1.parsed.y > value ? return_value : undefined
 
   async function get_data(field) {
     fetch("/data/" + field).then((r) => {
@@ -469,8 +362,8 @@
   function make_chart(field) {
     console.log(fetched_data)
     console.log(fetched_data[field][0]['t'])
-    const ctx = document.getElementById('myChart')
-    let myChart = new Chart(ctx, {
+    myChart.destroy()
+    myChart = new Chart(ctx, {
       type: 'line',
       options: {
         scales: {
@@ -498,10 +391,38 @@
             xAxisKey: 't',
             yAxisKey: 'y',
           },
+          segment: {
+            borderColor: ctx => aboveValue(ctx, 22.75, 'rgb(255,0,0)')
+          },
         }]
       }
     })
   }
+
+
+  function get_sensor_names() {
+    fetch('/names').then(r => r.json()).then(json => {
+      for (let i = 0; i < json['names'].length; i++) {
+        add_sensor_option(json['readable_names'][i], json['names'][i])
+      }
+    })
+  }
+
+  /**<li><a className="dropdown-item d-flex align-items-center gap-2 py-2" href="#">
+    <span className="d-inline-block bg-info rounded-circle p-1"></span>
+    Separated link
+  </a></li>**/
+
+  function add_sensor_option(readable_name, name) {
+    let button = document.createElement("button")
+    button.className = "dropdown-item d-flex align-items-center gap-2 py-2"
+    button.innerText = readable_name
+    button.onclick = () => get_data(name)
+    let li = document.createElement("li")
+    li.appendChild(button)
+    document.getElementById("sensor_add_dropdown").appendChild(li)
+  }
+
 </script>
 
 

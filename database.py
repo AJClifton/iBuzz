@@ -13,6 +13,8 @@ class Database:
 
     column_names = ['SerNo', 'SeqNo', 'Time', 'Outside_temp', 'Outside_humidity', 'Temp_1', 'Temp_2', 'Temp_3',
                     'Accelerometer', 'Entrance', 'Weight', 'Frequency']
+    readable_column_names = ['Serial Number', 'Sequence Number', 'Time', 'Outside Temperature', 'Outside Humidity',
+                    'Temperature 1', 'Temperature 2', 'Temperature 3', 'Accelerometer', 'Entrance', 'Weight', 'Frequency']
 
     def __init__(self):
         database_exists = os.path.isfile(self.database_path)
@@ -74,6 +76,10 @@ class Database:
             data[field].append(line[1])
         cursor.close()
         return data
+
+    def fetch_names(self):
+        return {'names': self.column_names, 'readable_names': self.readable_column_names}
+
 
 
 if __name__ == "__main__":
