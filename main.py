@@ -86,3 +86,8 @@ def send_report(path):
 @app.route('/data/<path:path>')
 def fetch_data(path):
     return db.fetch_data(path)
+
+
+@app.route('/names')
+def fetch_names():
+    return db.fetch_names()
