@@ -53,9 +53,9 @@ class Database:
                 data_dict = field.get("Tags", None)
                 if data_dict is not None:
                     outside_humidity, outside_temperature = encoded_data.extract_ela_rht_data(data_dict[0].get("Data"))
-                data_dict = field.get("Data", None)
-                if data_dict is not None:
-                    outside_humidity, outside_temperature = encoded_data.extract_ela_rht_data(data_dict[0].get("Data"))
+                data_str = field.get("Data", None)
+                if data_str is not None:
+                    outside_humidity, outside_temperature = encoded_data.extract_ela_rht_data(data_str)
 
 
             if outside_temperature is None:
