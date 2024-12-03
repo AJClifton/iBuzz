@@ -15,7 +15,10 @@ def extract_data(data, sizes, to_return, is_reversed):
     try:
         print('ASCII: ' + bytearray.fromhex(hex_data[20:28]).decode('utf-8'))
     except Exception as e:
-        None
+        try:
+            print('ASCII: ' + bytearray.fromhex(hex_data[:8]).decode('utf-8'))
+        except Exception as e:
+            None
     for i in range(len(sizes)):
         section, hex_data = hex_data[:sizes[i] * 2], hex_data[sizes[i] * 2:]
         if not to_return[i]:
