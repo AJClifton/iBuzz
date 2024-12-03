@@ -195,44 +195,8 @@
           <h5 class="offcanvas-title" id="sidebarMenuLabel">Company name</h5>
           <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#sidebarMenu" aria-label="Close"></button>
         </div>
-        <div class="offcanvas-body d-md-flex flex-column p-0 pt-lg-3 overflow-y-auto">
+        <div class="offcanvas-body d-md-flex flex-column p-0 pt-lg-3 overflow-y-auto" style="height: 100vh">
           <ul class="nav flex-column">
-            <li class="nav-item">
-              <a class="nav-link d-flex align-items-center gap-2 active" aria-current="page" href="#">
-                <svg class="bi"><use xlink:href="#house-fill"/></svg>
-                Dashboard
-              </a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link d-flex align-items-center gap-2" href="#">
-                <svg class="bi"><use xlink:href="#file-earmark"/></svg>
-                Orders
-              </a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link d-flex align-items-center gap-2" href="#">
-                <svg class="bi"><use xlink:href="#cart"/></svg>
-                Products
-              </a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link d-flex align-items-center gap-2" href="#">
-                <svg class="bi"><use xlink:href="#people"/></svg>
-                Customers
-              </a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link d-flex align-items-center gap-2" href="#">
-                <svg class="bi"><use xlink:href="#graph-up"/></svg>
-                Reports
-              </a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link d-flex align-items-center gap-2" href="#">
-                <svg class="bi"><use xlink:href="#puzzle"/></svg>
-                Integrations
-              </a>
-            </li>
             <li>
               <div class="dropdown">
                 <button class="btn btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
@@ -249,39 +213,6 @@
                   </div>
               </div>
                 </div>
-            </li>
-          </ul>
-
-          <h6 class="sidebar-heading d-flex justify-content-between align-items-center px-3 mt-4 mb-1 text-body-secondary text-uppercase">
-            <span>Saved reports</span>
-            <a class="link-secondary" href="#" aria-label="Add a new report">
-              <svg class="bi"><use xlink:href="#plus-circle"/></svg>
-            </a>
-          </h6>
-          <ul class="nav flex-column mb-auto">
-            <li class="nav-item">
-              <a class="nav-link d-flex align-items-center gap-2" href="#">
-                <svg class="bi"><use xlink:href="#file-earmark-text"/></svg>
-                Current month
-              </a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link d-flex align-items-center gap-2" href="#">
-                <svg class="bi"><use xlink:href="#file-earmark-text"/></svg>
-                Last quarter
-              </a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link d-flex align-items-center gap-2" href="#">
-                <svg class="bi"><use xlink:href="#file-earmark-text"/></svg>
-                Social engagement
-              </a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link d-flex align-items-center gap-2" href="#">
-                <svg class="bi"><use xlink:href="#file-earmark-text"/></svg>
-                Year-end sale
-              </a>
             </li>
           </ul>
 
@@ -337,31 +268,15 @@
   let fetched_data = {}
   const ctx = document.getElementById('myChart')
   let myChart = new Chart(ctx)
+  let datasets = []
 
   const aboveValue = (ctx, value, return_value) => ctx.p1.parsed.y > value ? return_value : undefined
 
   async function get_data(field) {
-    fetch("/data/" + field).then((r) => {
-      if (!r.ok) {
-        throw new Error("Bad Request")
-      }
-      return r.json()
-    }).then((json) => {
-      console.log(json)
-      let times = json['Time']
-      let data = json[field]
-      let reformatted = []
-      for (let i = 0; i < times.length; i++) {
-        reformatted.push({t:times[i]*1000, y:data[i]})
-      }
-      console.log(reformatted)
-      fetched_data[field] = reformatted
-    }).then(() => {make_chart(field)})
+    await fetch_data(field, make_chart)
   }
 
   function make_chart(field) {
-    console.log(fetched_data)
-    console.log(fetched_data[field][0]['t'])
     myChart.destroy()
     myChart = new Chart(ctx, {
       type: 'line',
@@ -399,6 +314,47 @@
     })
   }
 
+  function add_dataset(dataset) {
+    if (datasets.includes(dataset)) {
+      return
+    }
+    datasets.push(dataset)
+    fetch_data(dataset, _add_dataset)
+  }
+
+  function _add_dataset(dataset) {
+    myChart.data.datasets.push({
+      label: dataset,
+      data: fetched_data[dataset],
+      parsing: {
+        xAxisKey: 't',
+        yAxisKey: 'y',
+      },
+      segment: {
+        borderColor: ctx => aboveValue(ctx, 22.75, 'rgb(255,0,0)')
+      },
+    })
+    myChart.update()
+  }
+
+  async function fetch_data(field, _callback) {
+    fetch("/data/" + field).then((r) => {
+      if (!r.ok) {
+        throw new Error("Bad Request")
+      }
+      return r.json()
+    }).then((json) => {
+      console.log(json)
+      let times = json['Time']
+      let data = json[field]
+      let reformatted = []
+      for (let i = 0; i < times.length; i++) {
+        reformatted.push({t:times[i]*1000, y:data[i]})
+      }
+      console.log(reformatted)
+      fetched_data[field] = reformatted
+    }).then(() => _callback(field))
+  }
 
   function get_sensor_names() {
     fetch('/names').then(r => r.json()).then(json => {
@@ -417,7 +373,7 @@
     let button = document.createElement("button")
     button.className = "dropdown-item d-flex align-items-center gap-2 py-2"
     button.innerText = readable_name
-    button.onclick = () => get_data(name)
+    button.onclick = () => {myChart.data.datasets.length !== 0 ? fetch_data(name, add_dataset) : fetch_data(name, make_chart)}
     let li = document.createElement("li")
     li.appendChild(button)
     document.getElementById("sensor_add_dropdown").appendChild(li)
