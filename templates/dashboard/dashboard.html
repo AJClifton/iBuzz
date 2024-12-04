@@ -278,6 +278,7 @@
   }
 
   function make_chart(field) {
+    datasets.push(field)
     myChart.destroy()
     myChart = new Chart(ctx, {
       type: 'line',
