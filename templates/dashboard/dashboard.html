@@ -362,8 +362,8 @@
         console.log(json)
         let times = json['Time']
         let data = json[datasets[i]]
-        for (let i = 0; i < times.length; i++) {
-          existing_dataset.push({t:times[i]*1000, y:data[i]})
+        for (let k = 0; k < times.length; k++) {
+          existing_dataset.push({t:times[k]*1000, y:data[k]})
         }
       }).then(() => {
         for (let j = 0; j < myChart.data.datasets.length; j++) {
