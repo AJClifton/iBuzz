@@ -52,7 +52,15 @@ class Database:
             for field in record["Fields"]:
                 data_dict = field.get("Tags", None)
                 if data_dict is not None:
-                    outside_humidity, outside_temperature = encoded_data.extract_ela_rht_data(data_dict[0].get("Data"))
+                    for tag in data_dict:
+                        try:
+                            outside_humidity, outside_temperature = encoded_data.extract_ela_rht_data(tag.get("Data"))
+                        except Exception as e:
+                            None
+                data_str = field.get("Data", None)
+                if data_str is not None:
+                    outside_humidity, outside_temperature = encoded_data.extract_ela_rht_data(data_str)
+
 
             if outside_temperature is None:
                 continue
