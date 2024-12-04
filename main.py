@@ -85,6 +85,8 @@ def send_report(path):
 
 @app.route('/data/<path:path>')
 def fetch_data(path):
+    if len(str(path).split("/")) >= 2:
+        return db.fetch_data(str(path).split("/")[0], int(str(path).split("/")[1]))
     return db.fetch_data(path)
 
 
