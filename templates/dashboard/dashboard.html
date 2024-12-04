@@ -362,18 +362,19 @@
         console.log(json)
         let times = json['Time']
         let data = json[datasets[i]]
-        for (let k = 0; k < times.length; k++) {
-          existing_dataset.push({t:times[k]*1000, y:data[k]})
-        }
-      }).then(() => {
         for (let j = 0; j < myChart.data.datasets.length; j++) {
           if (myChart.data.datasets[j].label === datasets[i]) {
-            myChart.data.datasets[j].data = fetched_data[datasets[i]]
+            for (let k = 0; k < times.length; k++) {
+              let d = {t: times[k] * 1000, y: data[k]}
+              existing_dataset.push(d)
+              myChart.data.datasets[j].data.push(d)
+            }
           }
         }
+      }).then(() => {
+        myChart.update('none')
       })
     }
-    myChart.update()
   }
 
   async function fetch_data(field, _callback) {
