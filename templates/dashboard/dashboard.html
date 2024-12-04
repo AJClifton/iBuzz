@@ -260,14 +260,15 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.3.2/dist/chart.umd.js" crossorigin="anonymous"></script>
 <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-moment@^1"></script>
-<!--<script src="templates/dashboard/dashboard.js" type="module"></script>-->
+<script src="https://cdn.jsdelivr.net/npm/hammerjs@2.0.8"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom"></script>
 
 <script>
 
 
   let fetched_data = {}
   const ctx = document.getElementById('myChart')
-  let myChart = new Chart(ctx)
+  let myChart = new Chart(ctx, {options: {plugins: {zoom: {}}}})
   let datasets = []
 
   const aboveValue = (ctx, value, return_value) => ctx.p1.parsed.y > value ? return_value : undefined
@@ -281,6 +282,22 @@
     myChart = new Chart(ctx, {
       type: 'line',
       options: {
+        plugins: {
+          zoom: {
+            pan: {
+              mode: 'x'
+            },
+            zoom: {
+              mode: 'x',
+              wheel: {
+                enabled: true,
+              },
+              pinch: {
+                enabled: true,
+              },
+            }
+          },
+        },
         scales: {
           x: {
             type: 'time',
@@ -335,6 +352,26 @@
       },
     })
     myChart.update()
+  }
+
+  async function fetch_updated_data() {
+    for (let i = 0; i < datasets.length; i++) {
+      let existing_dataset = fetched_data[datasets[i]]
+      fetch("/data/" + datasets[i] + "/" + existing_dataset[existing_dataset.length - 1]['t']/1000).then((r) => r.json()).then((json) => {
+        console.log(json)
+        let times = json['Time']
+        let data = json[datasets[i]]
+        for (let i = 0; i < times.length; i++) {
+          existing_dataset.push({t:times[i]*1000, y:data[i]})
+        }
+      }).then(() => {
+        for (let j = 0; j < myChart.data.datasets.length; j++) {
+          if (myChart.data.datasets[j].label === datasets[i]) {
+            myChart.data.datasets[j].data = fetched_data[datasets[i]]
+          }
+        }
+      })
+    }
   }
 
   async function fetch_data(field, _callback) {
