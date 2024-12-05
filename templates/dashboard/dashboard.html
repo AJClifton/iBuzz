@@ -244,6 +244,8 @@
       <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
         <h1 class="h2">Dashboard</h1>
         <div class="btn-toolbar mb-2 mb-md-0">
+          <button type="button" class="btn btn-sm btn-outline-secondary" onclick="fetch_updated_data()">Fetch Updates</button>
+          <button type="button" class="btn btn-sm btn-outline-secondary" onclick="toggle_points()">Show / Hide points</button>
           <div class="btn-group me-2">
             <button type="button" class="btn btn-sm btn-outline-secondary">Share</button>
             <button type="button" class="btn btn-sm btn-outline-secondary">Export</button>
@@ -277,7 +279,10 @@
   let myChart = new Chart(ctx, {options: {plugins: {zoom: {}}}})
   let datasets = []
 
-  const aboveValue = (ctx, value, return_value, default_value) => ctx.p1.parsed.y > value ? return_value : default_value
+  const aboveValue = (ctx, value, return_value, default_value) => ctx.p1.parsed.y > value || ctx.p0.parsed.y > value ? return_value : default_value
+  const belowValue = (ctx, value, return_value, default_value) => ctx.p1.parsed.y < value || ctx.p0.parsed.y < value ? return_value : default_value
+  const defaultColour = 'rgb(42, 195, 212)'
+  const defaultPointRadius = 3
 
   async function get_data(field) {
     await fetch_data(field, make_chart)
@@ -317,8 +322,9 @@
         },
         elements: {
           point: {
-            radius: 3,
+            radius: defaultPointRadius,
             pointHitRadius: 8,
+            borderColor: defaultColour,
           }
         },
       },
@@ -331,7 +337,7 @@
             yAxisKey: 'y',
           },
           segment: {
-            borderColor: ctx => aboveValue(ctx, 22.75, 'rgb(255,0,0)', 'rgb(0,0,255)')
+            borderColor: defaultColour,
           },
         }]
       }
@@ -355,8 +361,8 @@
         yAxisKey: 'y',
       },
       segment: {
-        borderColor: ctx => aboveValue(ctx, 22.75, 'rgb(255,0,0)', 'rgb(0,0,255)')
-      },
+            borderColor: defaultColour,
+          },
     })
     myChart.update()
   }
@@ -452,35 +458,77 @@
                 <div style="display: inline-block;">
                   <div class="input-group mb-3" style="float: left; width: 60%;">
                     <span class="input-group-text" id="basic-addon1">Highlight Above</span>
-                    <input type="text" class="form-control" placeholder="20" aria-label="Value" aria-describedby="basic-addon1">
+                    <input type="text" class="form-control" placeholder="20" aria-label="Value" aria-describedby="basic-addon1" id="`+ name + "above_value" + `">
                   </div>
-                  <input type="color" class="form-control form-control-color" id="myColor" value="#CCCCCC" title="Choose a color" style="float: left;">
+                  <input type="color" class="form-control form-control-color" id="`+ name + "above_colour" + `" value="#CCCCCC" title="Choose a color" style="float: left;">
+                  <button class="btn btn-light" style="float: left;" id=` + name + "above_apply" + `>Apply</button>
                 </div>
               </li>
               <li>
                 <div style="display: inline-block;">
                   <div class="input-group mb-3" style="float: left; width: 60%;">
                     <span class="input-group-text" id="basic-addon1">Highlight Below</span>
-                    <input type="text" class="form-control" placeholder="20" aria-label="Value" aria-describedby="basic-addon1">
+                    <input type="text" class="form-control" placeholder="20" aria-label="Value" aria-describedby="basic-addon1"id="`+ name + "below_value" + `">
                   </div>
-                  <input type="color" class="form-control form-control-color" id="myColor" value="#CCCCCC" title="Choose a color" style="float: left;">
+                  <input type="color" class="form-control form-control-color" id="`+ name + "below_colour" + `" value="#CCCCCC" title="Choose a color" style="float: left;">
+                  <button class="btn btn-light" style="float: left;" id=` + name + "below_apply" + `>Apply</button>
+                </div>
+              </li>
+              <li>
+                <div style="display: inline-block;">
+                  <input type="color" class="form-control form-control-color" id="`+ name + "line_colour" + `" value="#CCCCCC" title="Choose a color" style="float: left;">
+                  <button class="btn btn-light" style="float: left;" id=` + name + "line_apply" + `>Apply</button>
                 </div>
               </li>
               <li><hr class="dropdown-divider"></li>
-              <li><button class="dropdown-item" >Remove</button></li>
+              <li><button class="dropdown-item" id=` + name + "remove" + `>Remove</button></li>
             </ul>
         `
     document.getElementById("sensor-options-parent").appendChild(div);
+    document.getElementById(name + "above_apply").onclick = () => {change_highlight_above(name, document.getElementById(name+"above_value").value, document.getElementById(name+"above_colour").value, document.getElementById(name+"line_colour").value)}
+    document.getElementById(name + "below_apply").onclick = () => {change_highlight_below(name, document.getElementById(name+"below_value").value, document.getElementById(name+"below_colour").value, document.getElementById(name+"line_colour").value)}
+    document.getElementById(name + "line_apply").onclick = () => {change_line_colour(name, document.getElementById(name+"line_colour").value)}
+    document.getElementById(name + "remove").onclick = () => {remove_dataset(name)}
   }
 
 
-  function change_highlight_above(name, value, colour) {
+  function change_line_colour(name, colour) {
+    console.log(name, colour)
     myChart.data.datasets.forEach(element => {
       if (element.label === name) {
-        element.segment.borderColor = ctx => aboveValue(ctx, value, colour, 'rgb(0,0,255)')
+        element.segment.borderColor = colour
         myChart.update()
       }
     });
+  }
+
+
+  function change_highlight_above(name, value, colour, default_colour) {
+    console.log(name, value, colour)
+    myChart.data.datasets.forEach(element => {
+      if (element.label === name) {
+        element.segment.borderColor = ctx => aboveValue(ctx, value, colour, default_colour)
+        myChart.update()
+      }
+    });
+  }
+
+  function change_highlight_below(name, value, colour, default_colour) {
+    console.log(name, value, colour)
+    myChart.data.datasets.forEach(element => {
+      if (element.label === name) {
+        element.segment.borderColor = ctx => belowValue(ctx, value, colour, default_colour)
+        myChart.update()
+      }
+    });
+  }
+
+
+  function remove_dataset(name) {
+    delete fetched_data.name
+    myChart.data.datasets = myChart.data.datasets.filter(d => d.label !== name)
+    myChart.update()
+    document.getElementById(name).remove()
   }
 
 
@@ -503,6 +551,12 @@
     let li = document.createElement("li")
     li.appendChild(button)
     document.getElementById("sensor_add_dropdown").appendChild(li)
+  }
+
+
+  function toggle_points() {
+    myChart.options.elements.point.radius = myChart.options.elements.point.radius === defaultPointRadius ? 0 : defaultPointRadius
+    myChart.update()
   }
 
 </script>

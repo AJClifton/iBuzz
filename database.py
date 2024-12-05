@@ -81,7 +81,6 @@ class Database:
         cursor.execute(f"""SELECT Time, {field} FROM Data WHERE Time > ?""", (start_time,))
         data = {'Time': [], str(field): []}
         for line in cursor.fetchall():
-            print(line)
             data['Time'].append(line[0])
             data[field].append(line[1])
         cursor.close()
