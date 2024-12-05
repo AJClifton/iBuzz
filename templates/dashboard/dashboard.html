@@ -192,7 +192,7 @@
     <div class="sidebar border border-right col-md-3 col-lg-2 p-0 bg-body-tertiary">
       <div class="offcanvas-md offcanvas-end bg-body-tertiary" tabindex="-1" id="sidebarMenu" aria-labelledby="sidebarMenuLabel">
         <div class="offcanvas-header">
-          <h5 class="offcanvas-title" id="sidebarMenuLabel">Company name</h5>
+          <h5 class="offcanvas-title" id="sidebarMenuLabel">iBuzz2</h5>
           <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#sidebarMenu" aria-label="Close"></button>
         </div>
         <div class="offcanvas-body d-md-flex flex-column p-0 pt-lg-3 overflow-y-auto" style="height: 100vh">
@@ -211,10 +211,14 @@
 
                       </ul>
                   </div>
-              </div>
                 </div>
+              </div>
             </li>
           </ul>
+
+          <hr class="my-3">
+          
+          <div id="sensor-options-parent"></div>      
 
           <hr class="my-3">
 
@@ -273,7 +277,7 @@
   let myChart = new Chart(ctx, {options: {plugins: {zoom: {}}}})
   let datasets = []
 
-  const aboveValue = (ctx, value, return_value) => ctx.p1.parsed.y > value ? return_value : undefined
+  const aboveValue = (ctx, value, return_value, default_value) => ctx.p1.parsed.y > value ? return_value : default_value
 
   async function get_data(field) {
     await fetch_data(field, make_chart)
@@ -327,7 +331,7 @@
             yAxisKey: 'y',
           },
           segment: {
-            borderColor: ctx => aboveValue(ctx, 22.75, 'rgb(255,0,0)')
+            borderColor: ctx => aboveValue(ctx, 22.75, 'rgb(255,0,0)', 'rgb(0,0,255)')
           },
         }]
       }
@@ -351,7 +355,7 @@
         yAxisKey: 'y',
       },
       segment: {
-        borderColor: ctx => aboveValue(ctx, 22.75, 'rgb(255,0,0)')
+        borderColor: ctx => aboveValue(ctx, 22.75, 'rgb(255,0,0)', 'rgb(0,0,255)')
       },
     })
     myChart.update()
@@ -401,6 +405,85 @@
     })
   }
 
+
+  /**
+   *  <div class="dropdown">
+        <button class="btn btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+          Outside Temperature
+        </button>
+        <ul class="dropdown-menu" style="">
+          <li><h6 class="dropdown-header">Graph Options</h6></li>
+          <li>
+            <div style="display: inline-block;">
+              <div class="input-group mb-3" style="float: left; width: 60%;">
+                <span class="input-group-text" id="basic-addon1">Highlight Above</span>
+                <input type="text" class="form-control" placeholder="20" aria-label="Value" aria-describedby="basic-addon1">
+              </div>
+              <input type="color" class="form-control form-control-color" id="myColor" value="#CCCCCC" title="Choose a color" style="float: left;">
+            </div>
+          </li>
+          <li>
+            <div style="display: inline-block;">
+              <div class="input-group mb-3" style="float: left; width: 60%;">
+                <span class="input-group-text" id="basic-addon1">Highlight Below</span>
+                <input type="text" class="form-control" placeholder="20" aria-label="Value" aria-describedby="basic-addon1">
+              </div>
+              <input type="color" class="form-control form-control-color" id="myColor" value="#CCCCCC" title="Choose a color" style="float: left;">
+            </div>
+          </li>
+          <li><hr class="dropdown-divider"></li>
+          <li><button class="dropdown-item" >Remove</button></li>
+        </ul>
+      </div>
+   **/
+
+
+  function add_sensor_option_dropdown(readable_name, name) {
+    let div = document.createElement('div')
+    div.setAttribute('class', 'dropdown')
+    div.setAttribute('id', name)
+    div.innerHTML = `
+        <button class="btn btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+              `+ readable_name + `
+            </button>
+            <ul class="dropdown-menu" style="">
+              <li><h6 class="dropdown-header">Graph Options</h6></li>
+              <li>
+                <div style="display: inline-block;">
+                  <div class="input-group mb-3" style="float: left; width: 60%;">
+                    <span class="input-group-text" id="basic-addon1">Highlight Above</span>
+                    <input type="text" class="form-control" placeholder="20" aria-label="Value" aria-describedby="basic-addon1">
+                  </div>
+                  <input type="color" class="form-control form-control-color" id="myColor" value="#CCCCCC" title="Choose a color" style="float: left;">
+                </div>
+              </li>
+              <li>
+                <div style="display: inline-block;">
+                  <div class="input-group mb-3" style="float: left; width: 60%;">
+                    <span class="input-group-text" id="basic-addon1">Highlight Below</span>
+                    <input type="text" class="form-control" placeholder="20" aria-label="Value" aria-describedby="basic-addon1">
+                  </div>
+                  <input type="color" class="form-control form-control-color" id="myColor" value="#CCCCCC" title="Choose a color" style="float: left;">
+                </div>
+              </li>
+              <li><hr class="dropdown-divider"></li>
+              <li><button class="dropdown-item" >Remove</button></li>
+            </ul>
+        `
+    document.getElementById("sensor-options-parent").appendChild(div);
+  }
+
+
+  function change_highlight_above(name, value, colour) {
+    myChart.data.datasets.forEach(element => {
+      if (element.label === name) {
+        element.borderColor = ctx => aboveValue(ctx, value, colour, 'rgb(0,0,255)')
+        myChart.update()
+      }
+    });
+  }
+
+
   /**<li><a className="dropdown-item d-flex align-items-center gap-2 py-2" href="#">
     <span className="d-inline-block bg-info rounded-circle p-1"></span>
     Separated link
@@ -410,7 +493,13 @@
     let button = document.createElement("button")
     button.className = "dropdown-item d-flex align-items-center gap-2 py-2"
     button.innerText = readable_name
-    button.onclick = () => {myChart.data.datasets.length !== 0 ? fetch_data(name, add_dataset) : fetch_data(name, make_chart)}
+    if (Object.keys(fetched_data).includes(name)) {
+      return
+    }
+    button.onclick = () => {
+      myChart.data.datasets.length !== 0 ? fetch_data(name, add_dataset) : fetch_data(name, make_chart)
+      add_sensor_option_dropdown(readable_name, name)
+    }
     let li = document.createElement("li")
     li.appendChild(button)
     document.getElementById("sensor_add_dropdown").appendChild(li)
