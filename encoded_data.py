@@ -3,13 +3,17 @@ import base64
 
 def extract_ela_rht_data(data):
     extracted_data = extract_data(data, [6, 12, 3, 1, 2], [False, False, False, True, True],
-                                  [False, False, False, False, True])
+                                  is_reversed=[False, False, False, False, True])
     return extracted_data[0], extracted_data[1] / 100
 
 
-def extract_data(data, sizes, to_return, is_reversed):
+def extract_data(data, sizes, to_return, is_reversed=None, hex_string_check=None):
+    if is_reversed is None:
+        is_reversed = [False for s in sizes]
     print('base64: ' + data)
     hex_data = base64.b64decode(data).hex()
+    if hex_string_check not in hex_data:
+        raise Exception(ValueError)
     print('hex: ' + hex_data)
     extracted_data = []
     try:
