@@ -7,9 +7,8 @@ def extract_ela_rht_data(data):
     return extracted_data[0], extracted_data[1] / 100
 
 def extract_custom_data(data):
-    extracted_data = extract_data(data, [6, 12, 3, 1, 2], [False, False, False, True, True],
-                                  is_reversed=[False, False, False, False, True], hex_string_check="502052485420393033434344")
-    return extracted_data[0], extracted_data[1] / 100
+    extracted_data = extract_data(data, [1, 2, 2, 18], [False, True, False, False])
+    return extracted_data[0] / 10,
 
 
 def extract_data(data, sizes, to_return, is_reversed=None, hex_string_check=None):

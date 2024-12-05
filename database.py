@@ -46,6 +46,7 @@ class Database:
             seq_no = record["SeqNo"]
             date = record["DateUTC"]
             epoch_time = calendar.timegm(time.strptime(date, '%Y-%m-%d %H:%M:%S'))
+            temp_1 = 0
 
             # Not all field entries contain the data needed - looking for 'Tags' key
             outside_humidity, outside_temperature = None, None
@@ -56,12 +57,15 @@ class Database:
                         try:
                             outside_humidity, outside_temperature = encoded_data.extract_ela_rht_data(tag.get("Data"))
                         except ValueError:
-                            pass # CUSTOM DECODE CALL GOES HERE
+                            temp_1 = encoded_data.extract_custom_data(tag.get("Data"))
                         except Exception as e:
                             pass
                 data_str = field.get("Data", None)
                 if data_str is not None:
-                    outside_humidity, outside_temperature = encoded_data.extract_ela_rht_data(data_str)
+                    try:
+                        outside_humidity, outside_temperature = encoded_data.extract_ela_rht_data(data_str)
+                    except ValueError:
+                        temp_1 = encoded_data.extract_custom_data(data_str)
 
 
             if outside_temperature is None:
@@ -69,7 +73,7 @@ class Database:
 
             self.database_lock.acquire()
             self.connection.execute("INSERT INTO Data VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
-                                    (ser_no, seq_no, epoch_time, outside_temperature, outside_humidity, 0, 0, 0, 0, 0, 0, 0))
+                                    (ser_no, seq_no, epoch_time, outside_temperature, outside_humidity, temp_1, 0, 0, 0, 0, 0, 0))
             self.connection.commit()
             self.database_lock.release()
 
