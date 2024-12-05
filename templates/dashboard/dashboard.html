@@ -477,7 +477,7 @@
   function change_highlight_above(name, value, colour) {
     myChart.data.datasets.forEach(element => {
       if (element.label === name) {
-        element.borderColor = ctx => aboveValue(ctx, value, colour, 'rgb(0,0,255)')
+        element.segment.borderColor = ctx => aboveValue(ctx, value, colour, 'rgb(0,0,255)')
         myChart.update()
       }
     });

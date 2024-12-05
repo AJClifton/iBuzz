@@ -56,9 +56,9 @@ class Database:
                         try:
                             outside_humidity, outside_temperature = encoded_data.extract_ela_rht_data(tag.get("Data"))
                         except ValueError:
-                            None # CUSTOM DECODE CALL GOES HERE
+                            pass # CUSTOM DECODE CALL GOES HERE
                         except Exception as e:
-                            None
+                            pass
                 data_str = field.get("Data", None)
                 if data_str is not None:
                     outside_humidity, outside_temperature = encoded_data.extract_ela_rht_data(data_str)
