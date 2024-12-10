@@ -15,46 +15,181 @@ def verify_password(user, password):
 
 
 class LoginDatabase:
-    database_path = "logins.db"
+
     database_lock = threading.Lock()
 
-    def __init__(self):
+    def __init__(self, database_path="logins.db"):
+        self.database_path = database_path
         database_exists = os.path.isfile(self.database_path)
         self.connection = sqlite3.connect(self.database_path, check_same_thread=False)
         if not database_exists:
             self.connection.execute("""CREATE TABLE Logins (
-                                    Id	TEXT,
-                                    First_name TEXT,
-                                    Email	TEXT,
-                                    Password	TEXT,
-                                    PRIMARY KEY(Id)
+                                    user_id	TEXT,
+                                    first_name TEXT,
+                                    email	TEXT,
+                                    password	TEXT,
+                                    PRIMARY KEY(user_id)
+                                );""")
+            self.connection.execute("""CREATE TABLE HawkOwnership (
+                                    user_id	TEXT,
+                                    serial_number INTEGER,
+                                    PRIMARY KEY(serial_number)
+                                );""")
+            self.connection.execute("""CREATE TABLE HawkVisibility (
+                                    user_id	TEXT,
+                                    serial_number INTEGER,
+                                    PRIMARY KEY(user_id, serial_number)
                                 );""")
 
+    def close(self):
+        """Close database connection."""
+        self.connection.close()
+
     def fetch_user(self, user_id):
+        """Return a user object for a given user_id.
+
+        :param str user_id: uuid4
+        :returns: User object if user_id exists, otherwise None"""
         cursor = self.connection.cursor()
-        cursor.execute("""SELECT * FROM Logins WHERE Id = (?)""", (user_id, ))
+        cursor.execute("""SELECT * FROM Logins WHERE user_id = (?)""", (user_id,))
         item = cursor.fetchone()
         return None if item is None else User(*item)
 
     def fetch_user_by_email(self, email):
+        """Return a user object for a given email.
+
+        :returns: User object if email exists in database, otherwise None"""
         cursor = self.connection.cursor()
-        cursor.execute("""SELECT * FROM Logins WHERE Email = (?)""", (email, ))
+        cursor.execute("""SELECT * FROM Logins WHERE email = (?)""", (email,))
         item = cursor.fetchone()
         return None if item is None else User(*item)
 
     def add_user(self, first_name, email, password):
+        """Add a user to the database.
+
+        Adds first_name, email, and hashed password to database along with a generated unique user_id.
+        :type first_name: str
+        :type email: str
+        :type password: str"""
         hashed_password = hash_password(password)
         user_id = str(uuid.uuid4())
         while not self.check_unique_user_id(user_id):
             user_id = str(uuid.uuid4())
-        self.database_lock.acquire()
-        self.connection.execute("""INSERT INTO Logins VALUES (?, ?, ?, ?)""", (user_id, first_name, email, hashed_password))
-        self.connection.commit()
-        self.database_lock.release()
+        with self.connection:
+            self.connection.execute(
+                """INSERT INTO Logins VALUES (?, ?, ?, ?)""",
+                (user_id, first_name, email, hashed_password))
 
     def check_unique_user_id(self, user_id):
+        """Return False if the uuid exists in the database, True otherwise."""
         cursor = self.connection.cursor()
-        cursor.execute("""SELECT * FROM Logins WHERE Id = (?)""", (user_id,))
+        cursor.execute("""SELECT * FROM Logins WHERE user_id = (?)""", (user_id,))
         item = cursor.fetchone()
         return item is None
 
+    def register_hawk(self, user_id, serial_number):
+        """Add ownership of a hawk to a user account.
+
+        :type user_id: str
+        :param int serial_number: Serial Number assigned by Digital Matter to the Hawk
+        :raises sqlite3.IntegrityError: if the serial_number is already assigned to a user_id
+        :raises ValueError: if serial_number isn't an integer"""
+        serial_number = int(serial_number)
+        with self.connection:
+            self.connection.execute(
+                """INSERT INTO HawkOwnership VALUES (?, ?)""", (user_id, serial_number))
+
+    def deregister_hawk(self, user_id, serial_number):
+        """Remove a hawk from a user account.
+
+        Removes ownership of a hawk from a user_id and removes all visibility permissions.
+        :type user_id: str
+        :param int serial_number: Serial Number assigned by Digital Matter to the Hawk
+        :raises PermissionError: if user_id doesn't own the Hawk serial_number
+        :raises ValueError: if serial_number isn't an integer"""
+        if not self.check_hawk_ownership(user_id, serial_number):
+            raise PermissionError
+        with self.connection:
+            self.connection.execute(
+                """DELETE FROM HawkOwnership WHERE user_id = (?) and serial_number = (?)""", (user_id, serial_number))
+        self.remove_all_hawk_visibility(user_id, serial_number)
+
+    def check_hawk_ownership(self, user_id, serial_number):
+        """Check if user_id owns the Hawk with the given serial_number.
+
+        :type user_id: str
+        :type serial_number: int"""
+        cursor = self.connection.cursor()
+        cursor.execute("""SELECT * FROM HawkOwnership WHERE user_id = (?) and serial_number = (?)""", (user_id, serial_number))
+        item = cursor.fetchone()
+        return item is not None
+
+    def add_hawk_visibility(self, owner_user_id, serial_number, target_user_id):
+        """Give visibility permissions for a hawk's data to a user_id.
+
+        Using 'ALL' as a user_id will give universal visibility permissions.
+        :param str owner_user_id: uuid of the user that owns the Hawk
+        :param int serial_number: Serial Number assigned by Digital Matter to the Hawk
+        :param str target_user_id: uuid or 'ALL' that will be given viewing permissions
+        :raises PermissionError: if granting_user_id doesn't own the Hawk serial_number
+        :raises ValueError: if target_user_id doesn't exist"""
+        if not self.check_hawk_ownership(owner_user_id, serial_number):
+            raise PermissionError
+        if target_user_id != 'ALL':
+            if self.fetch_user(target_user_id) is None:
+                raise ValueError
+        try:
+            with self.connection:
+                self.connection.execute(
+                    """INSERT INTO HawkVisibility VALUES (?, ?)""", (target_user_id, serial_number))
+        # There is no need for an error if the permission has already been given before.
+        except sqlite3.IntegrityError as e:
+            pass
+
+    def remove_hawk_visibility(self, owner_user_id, serial_number, target_user_id):
+        """Remove visibility permissions for a hawk's data from a user_id.
+
+        Using 'ALL' as a user_id will remove universal permissions but NOT remove individually given permissions
+        :param str owner_user_id: uuid of the user that owns the Hawk
+        :param int serial_number: Serial Number assigned by Digital Matter to the Hawk
+        :param str target_user_id: uuid or 'ALL' that will lose viewing permissions
+        :raises PermissionError: if granting_user_id doesn't own the Hawk serial_number"""
+        if not self.check_hawk_ownership(owner_user_id, serial_number):
+            raise PermissionError
+        with self.connection:
+            self.connection.execute(
+                """DELETE FROM HawkVisibility WHERE user_id = (?) and serial_number = (?)""", (target_user_id, serial_number))
+
+    def remove_all_hawk_visibility(self, owner_user_id, serial_number):
+        """Remove all visibility permissions for a hawk.
+
+        :param str owner_user_id: uuid of the user that owns the Hawk
+        :param int serial_number: Serial Number assigned by Digital Matter to the Hawk
+        :raises PermissionError: if granting_user_id doesn't own the Hawk serial_number"""
+        if not self.check_hawk_ownership(owner_user_id, serial_number):
+            raise PermissionError
+        with self.connection:
+            self.connection.execute(
+                """DELETE FROM HawkVisibility WHERE serial_number = (?)""", (serial_number,))
+
+    def check_visibility_permissions(self, user_id, serial_number):
+        """Check if the given user_id has permission to view the Hawk with the given serial_number."""
+        if self.check_hawk_ownership(user_id, serial_number):
+            return True
+        cursor = self.connection.cursor()
+        cursor.execute(
+            """SELECT * FROM HawkVisibility WHERE user_id = (?) and (serial_number = (?) or serial_number = (?))""",
+            (user_id, serial_number, 'ALL'))
+        return cursor.fetchone() is not None
+
+    def fetch_visible_serial_numbers(self, user_id):
+        """Return list of serial numbers the given user_id has permission to see."""
+        cursor = self.connection.cursor()
+        cursor.execute("""SELECT serial_number FROM HawkVisibility WHERE user_id = ? or user_id = ?""", (user_id, 'ALL'))
+        serial_numbers = cursor.fetchall()
+        cursor.execute("""SELECT serial_number FROM HawkOwnership WHERE user_id = ?""", (user_id,))
+        owned_serial_number = cursor.fetchone()
+        if owned_serial_number is not None:
+            if owned_serial_number not in serial_numbers:
+                serial_numbers.insert(0, owned_serial_number)
+        return serial_numbers

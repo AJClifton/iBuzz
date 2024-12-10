@@ -404,11 +404,11 @@
   }
 
   function get_sensor_names() {
-    fetch('/names').then(r => r.json()).then(json => {
-      for (let i = 0; i < json['names'].length; i++) {
-        add_sensor_option(json['readable_names'][i], json['names'][i])
-      }
-    })
+    fetch('/names')
+            .then(r => r.json())
+            .then(json => {
+              json['names'].forEach((name) => add_sensor_option(name))
+            })
   }
 
 
@@ -444,13 +444,13 @@
    **/
 
 
-  function add_sensor_option_dropdown(readable_name, name) {
+  function add_sensor_option_dropdown(name) {
     let div = document.createElement('div')
     div.setAttribute('class', 'dropdown')
     div.setAttribute('id', name)
     div.innerHTML = `
         <button class="btn btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-              `+ readable_name + `
+              `+ name + `
             </button>
             <ul class="dropdown-menu" style="">
               <li><h6 class="dropdown-header">Graph Options</h6></li>
@@ -537,16 +537,16 @@
     Separated link
   </a></li>**/
 
-  function add_sensor_option(readable_name, name) {
+  function add_sensor_option(name) {
     let button = document.createElement("button")
     button.className = "dropdown-item d-flex align-items-center gap-2 py-2"
-    button.innerText = readable_name
+    button.innerText = name
     if (Object.keys(fetched_data).includes(name)) {
       return
     }
     button.onclick = () => {
       myChart.data.datasets.length !== 0 ? fetch_data(name, add_dataset) : fetch_data(name, make_chart)
-      add_sensor_option_dropdown(readable_name, name)
+      add_sensor_option_dropdown(name)
     }
     let li = document.createElement("li")
     li.appendChild(button)
