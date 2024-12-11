@@ -275,6 +275,7 @@
 
 
   let fetched_data = {}
+  let data = []
   const ctx = document.getElementById('myChart')
   let myChart = new Chart(ctx, {options: {plugins: {zoom: {}}}})
   let datasets = []
@@ -283,6 +284,29 @@
   const belowValue = (ctx, value, return_value, default_value) => ctx.p1.parsed.y < value || ctx.p0.parsed.y < value ? return_value : default_value
   const defaultColour = 'rgb(42, 195, 212)'
   const defaultPointRadius = 3
+
+  class SensorData {
+    constructor(serial_number, hive_number, sensor, json) {
+      this.serial_number = serial_number
+      this.hive_number = hive_number
+      this.sensor = sensor
+      this.data = []
+      addData(json)
+    };
+
+    addData(json) {
+      let times = json['Time']
+      let sensor_data = json[field]
+      for (let i = 0; i < times.length; i++) {
+        this.data.push({t:times[i]*1000, y:sensor_data[i]})
+      }
+    };
+
+    get data() {
+      return this.data;
+    }    
+
+  }
 
   async function get_data(field) {
     await fetch_data(field, make_chart)

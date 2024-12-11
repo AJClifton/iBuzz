@@ -19,8 +19,8 @@ def extract_outside_humidity_and_temperature(data):
 
 
 def extract_custom_data(data):
-    extracted_data = extract_data(data, [1, 2, 2, 18], [False, True, False, False])
-    return extracted_data[0] / 10,
+    extracted_data = extract_data(data, [1, 2, 2, 18], [True, True, False, False])
+    return extract_data[0], extracted_data[1] / 10
 
 
 def extract_data(data, sizes, to_return, is_reversed=None, hex_string_check=None):

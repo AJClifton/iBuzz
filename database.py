@@ -6,6 +6,7 @@ import threading
 import time
 import encoded_data
 import error_logger
+from hive_data import WeatherStationData, HiveData
 
 
 class Database:
@@ -31,10 +32,10 @@ class Database:
         if not database_exists:
             self.connection.execute("""CREATE TABLE Data (
                                     serial_number	INTEGER,
-                                    sequence_number	INTEGER,
-                                    time	INTEGER,
-                                    outside_temperature	NUMERIC,
                                     outside_humidity	NUMERIC,
+                                    outside_temperature	NUMERIC,
+                                    time	INTEGER,
+                                    hive_number INTEGER,
                                     temperature_1  NUMERIC,
                                     temperature_2  NUMERIC,
                                     temperature_3  NUMERIC,
@@ -50,13 +51,32 @@ class Database:
         thread = threading.Thread(target=self._process_data, args=[json])
         thread.start()
 
+    def _compare_and_add_hive(self, hives, new_hive):
+        """Modify hives so that it contains only the most recent data for each hive_number.
+        
+        If a hive with the same hive_number already exists in hives, do not add new_hive.
+        If a hive exists in hives which is an older version of new_hive, remove that hive."""
+        older_version = False
+        to_remove = []
+        for hive in hives:
+            if hive.is_more_recent_version_of(new_hive):
+                older_version = True
+            if new_hive.is_more_recent_version_of(hive):
+                to_remove.append(hive)
+        if not older_version:
+            hives.append(new_hive)
+        for hive_to_remove in to_remove:
+            hives.remove(hive_to_remove)
+        return hives
+
     def _process_data(self, json):
         """Extract and store the data values in the JSON from the Hawk."""
         serial_number = json["SerNo"]
+        weather_station = None
+        hives = []
         for record in json["Records"]:
-            sequence_number = record["SeqNo"]
             date = record["DateUTC"]
-            epoch_time = calendar.timegm(time.strptime(date, '%Y-%m-%d %H:%M:%S'))
+            time = calendar.timegm(time.strptime(date, '%Y-%m-%d %H:%M:%S'))
             outside_humidity, outside_temperature = None, None
             temperature_1 = 0
 
@@ -69,9 +89,11 @@ class Database:
                     for tag in tags:
                         try:
                             try:
-                                outside_humidity, outside_temperature = encoded_data.extract_outside_humidity_and_temperature(tag.get("Data"))
+                                weather_station = WeatherStationData(*encoded_data.extract_outside_humidity_and_temperature(tag.get("Data")))
                             except ValueError:
-                                temperature_1 = encoded_data.extract_custom_data(tag.get("Data"))
+                                new_hive = HiveData(*encoded_data.extract_custom_data(tag.get("Data")))
+                                new_hive.set_time(time)
+                                hives = self._compare_and_add_hive(hives, new_hive)
                         except Exception as e:
                             error_logger.log_error(e)
                 else:
@@ -79,17 +101,19 @@ class Database:
                     if data_str is not None:
                         try:
                             try:
-                                outside_humidity, outside_temperature = encoded_data.extract_outside_humidity_and_temperature(data_str)
+                                weather_station = WeatherStationData(*encoded_data.extract_outside_humidity_and_temperature(data_str))
                             except ValueError:
-                                temperature_1 = encoded_data.extract_custom_data(data_str)
+                                new_hive = HiveData(*encoded_data.extract_custom_data(data_str))
+                                new_hive.set_time(time)
+                                hives = self._compare_and_add_hive(hives, new_hive)
                         except Exception as e:
                             error_logger.log_error(e)
 
-            with self.database_lock.acquire():
-                self.connection.execute(
-                    "INSERT INTO Data VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
-                    (serial_number, sequence_number, epoch_time, outside_temperature, outside_humidity, temperature_1, 0, 0, 0, 0, 0, 0))
-                self.connection.commit()
+            with self.connection():
+                for hive in hives:
+                    self.connection.execute(
+                        "INSERT INTO Data VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                        (*weather_station.get_data(), *hive.get_data(), 0, 0, 0, 0, 0, 0))
 
     def fetch_field(self, serial_number, field, start_time=0, end_time=None):
         """Return the time column and the given column.
