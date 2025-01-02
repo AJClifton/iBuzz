@@ -517,10 +517,6 @@
     if (Object.keys(fetched_data).includes(name)) {
       return
     }
-    /**button.onclick = () => {
-      myChart.data.datasets.length !== 0 ? fetch_data(name, add_dataset) : fetch_data(name, make_chart)
-      add_sensor_option_dropdown(name)
-    }**/
     button.onclick = () => {
       datasets.forEach(element => {
         if (element.sensor == name) {
@@ -533,6 +529,7 @@
       add_sensor_option_dropdown(name, serial_number, hive_number)
     }
     let li = document.createElement("li")
+    button.style.backgroundColor = defaultColour
     li.appendChild(button)
     document.getElementById("sensor_add_dropdown_" + serial_number + "_" + hive_number).appendChild(li)
   }
