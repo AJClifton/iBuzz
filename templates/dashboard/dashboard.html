@@ -624,7 +624,7 @@
       thead.appendChild(tr)
       names.forEach(name => {
         let th = document.createElement("th")
-        th.innerText(name)
+        th.innerText = name
         tr.appendChild(th)
       })
       document.getElementById("recent_values_table").appendChild(thead)
