@@ -8,15 +8,11 @@ class HiveData:
         self.temperature_2 = temperature_2
         self.temperature_3 = temperature_3
         self.accelerometer = accelerometer
-        self.scale
+        self.scale = scale
         self.bees_out = bees_out
         self.bees_in = bees_in
         self.weight = weight
         self.frequency = frequency
-
-    def __init__(self, hive_number, temperature_1):
-        self.hive_number = hive_number
-        self.temperature_1 = temperature_1
 
     def set_time(self, time):
         self.time = time
