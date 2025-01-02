@@ -340,6 +340,10 @@
       this.values = values
       this.names = names
       console.log(this.get_time_since());
+
+      let time_index = this.names.indexOf("time")
+      this.values.splice(time_index, 1, this.get_time_since())
+      this.names.splice(time_index, 1, "Minutes Since Last Update")
       
       [this.names[3], this.names[4]] = [this.names[4], this.names[3]];
       [this.names[1], this.names[3]] = [this.names[3], this.names[1]];
@@ -349,8 +353,6 @@
       [this.values[1], this.values[3]] = [this.values[3], this.values[1]];
       [this.values[2], this.values[4]] = [this.values[4], this.values[2]];
 
-      this.values.splice(2, 1, this.get_time_since())
-      this.names.splice(2, 1, "Minutes Since Last Update")
     }
 
     get_value_by_name(name) {
