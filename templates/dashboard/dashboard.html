@@ -339,13 +339,14 @@
     constructor(values, names) {
       this.values = values
       this.names = names
-      console.log(values, names)
+      console.log(values, names);
 
-      let time_index = this.names.indexOf("time")
-      let time_since = this.get_time_since()
-      console.log("time_since", time_since)
-      this.values[time_index] = time_since
-      this.names[time_index] = "Minutes Since Last Update"
+      let time_index = this.names.indexOf("time");
+      console.log(time_index)
+      let time_since = this.get_time_since();
+      console.log("time_since", time_since);
+      this.values[time_index] = time_since;
+      this.names[time_index] = "Minutes Since Last Update";
 
       console.log(values,names);
       
