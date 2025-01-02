@@ -451,7 +451,11 @@
     fetch('/names')
             .then(r => r.json())
             .then(json => {
-              json['names'].forEach((name) => add_sensor_option(name, serial_number, hive_number))
+              json['names'].forEach((name) => {
+                if (name != "serial_number" && name != "time") {
+                  add_sensor_option(name, serial_number, hive_number)
+                }
+              })
             })
   }
 
