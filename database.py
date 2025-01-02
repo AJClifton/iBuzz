@@ -82,7 +82,7 @@ class Database:
         hives = []
         for record in json["Records"]:
             date = record["DateUTC"]
-            time = calendar.timegm(time.strptime(date, '%Y-%m-%d %H:%M:%S'))
+            time = calendar.timegm(record['DateUTC'].strptime(date, '%Y-%m-%d %H:%M:%S'))
             outside_humidity, outside_temperature = None, None
             temperature_1 = 0
 
