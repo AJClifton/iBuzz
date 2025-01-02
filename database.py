@@ -97,7 +97,7 @@ class Database:
                     for tag in tags:
                         try:
                             try:
-                                weather_station = WeatherStationData(*encoded_data.extract_outside_humidity_and_temperature(tag.get("Data")))
+                                weather_station = WeatherStationData(serial_number, *encoded_data.extract_outside_humidity_and_temperature(tag.get("Data")))
                             except ValueError:
                                 new_hive = HiveData(*encoded_data.extract_custom_data(tag.get("Data")))
                                 new_hive.set_time(epoch_time)
@@ -109,7 +109,7 @@ class Database:
                     if data_str is not None:
                         try:
                             try:
-                                weather_station = WeatherStationData(*encoded_data.extract_outside_humidity_and_temperature(data_str))
+                                weather_station = WeatherStationData(serial_number, *encoded_data.extract_outside_humidity_and_temperature(data_str))
                             except ValueError:
                                 new_hive = HiveData(*encoded_data.extract_custom_data(data_str))
                                 new_hive.set_time(epoch_time)

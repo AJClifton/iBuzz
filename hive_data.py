@@ -31,7 +31,8 @@ class HiveData:
 
 class WeatherStationData:
 
-    def __init__(self, outside_humidity, outside_temperature):
+    def __init__(self, serial_number, outside_humidity, outside_temperature):
+        self.serial_number = serial_number
         self.outside_humidity = outside_humidity
         self.outside_temperature = outside_temperature
 
