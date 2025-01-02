@@ -346,7 +346,7 @@
 
     get_time_since() {
       let sense_time = this.get_value_by_name('time')
-      return Math.round((new Date() / 1000) - sense_time) / 60
+      return Math.round(((new Date() / 1000) - sense_time) / 60)
     }
   }
 
