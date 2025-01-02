@@ -115,7 +115,7 @@ class Database:
                         except Exception as e:
                             error_logger.log_error(e)
 
-            with self.connection():
+            with self.connection:
                 for hive in hives:
                     self.connection.execute(
                         "INSERT INTO Data VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
