@@ -286,12 +286,13 @@
         long_name: this.long_name,
         label: sensor,
         data: this.data,
+        backgroundColor: defaultColour,
         parsing: {
           xAxisKey: 't',
           yAxisKey: 'y',
         },
         segment: {
-              backgroundColor: defaultColour,
+              borderColor: defaultColour,
             },
       }
 
@@ -461,7 +462,8 @@
     console.log(name, colour)
     datasets.forEach(element => {
       if (element.long_name === name) {
-        element.chartjs_dataset.segment.backgroundColor = colour
+        element.chartjs_dataset.segment.borderColor = colour
+        element.chartjs_dataset.backgroundColor = colour
         myChart.update()
       }
     });
@@ -473,7 +475,7 @@
     console.log(name, value, colour)
     datasets.forEach(element => {
       if (element.long_name === name) {
-        element.chartjs_dataset.segment.backgroundColor = ctx => aboveValue(ctx, value, colour, default_colour)
+        element.chartjs_dataset.segment.borderColor = ctx => aboveValue(ctx, value, colour, default_colour)
         myChart.update()
       }
     });
@@ -483,7 +485,7 @@
     console.log(name, value, colour)
     datasets.forEach(element => {
       if (element.long_name === name) {
-        element.chartjs_dataset.segment.backgroundColor = ctx => belowValue(ctx, value, colour, default_colour)
+        element.chartjs_dataset.segment.borderColor = ctx => belowValue(ctx, value, colour, default_colour)
         myChart.update()
       }
     });
