@@ -574,7 +574,6 @@
     serial_numbers.forEach(serial_number => {
       fetch("/hive_numbers/" + serial_number).then(r => r.json()).then(json => {
         hive_numbers = json['hive_numbers']
-        console.log(hive_numbers)
         hive_numbers.forEach(hive_number => {
           document.getElementById("add-sensor-parent").innerHTML += `
             <div class="dropdown">
@@ -602,6 +601,7 @@
 
   function add_recent_value_widgets(serial_numbers) {
     fetch('/names').then(r => r.json()['names']).then(names => {
+      console.log(names)
       serial_numbers.forEach(serial_number => {
         console.log(names, serial_number)
         fetch('/recent_values/' + serial_number).then(r => r.json()['recent_values']).then(recent_values => {
