@@ -40,6 +40,7 @@ class Database:
                                     temperature_2  NUMERIC,
                                     temperature_3  NUMERIC,
                                     accelerometer   NUMERIC,
+                                    scale NUMERIC,
                                     bees_out INTEGER,
                                     bees_in INTEGER,
                                     weight  NUMERIC,
@@ -119,8 +120,8 @@ class Database:
             with self.connection:
                 for hive in hives:
                     self.connection.execute(
-                        "INSERT INTO Data VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
-                        (*weather_station.get_data(), *hive.get_data(), 0, 0, 0, 0, 0, 0))
+                        "INSERT INTO Data VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                        (*weather_station.get_data(), *hive.get_data()))
 
     def fetch_field(self, serial_number, hive_number, field, start_time=0, end_time=None):
         """Return the time column and the given column.

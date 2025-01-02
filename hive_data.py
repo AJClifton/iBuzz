@@ -2,12 +2,13 @@
 
 class HiveData:
 
-    def __init__(self, hive_number, temperature_1, temperature_2, temperature_3, accelerometer, bees_out, bees_in, weight, frequency):
+    def __init__(self, hive_number, temperature_1, temperature_2, temperature_3, accelerometer, scale, bees_out, bees_in, weight, frequency):
         self.hive_number = hive_number
         self.temperature_1 = temperature_1
         self.temperature_2 = temperature_2
         self.temperature_3 = temperature_3
         self.accelerometer = accelerometer
+        self.scale
         self.bees_out = bees_out
         self.bees_in = bees_in
         self.weight = weight
@@ -28,7 +29,7 @@ class HiveData:
     def get_data(self):
         if self.temperature_2 is None:
             return (self.time, self.hive_number, self.temperature_1)
-        return (self.time, self.hive_number, self.temperature_1, self.temperature_2, self.temperature_3, self.accelerometer, self.bees_out, self.bees_in, self.weight, self.frequency)
+        return (self.time, self.hive_number, self.temperature_1, self.temperature_2, self.temperature_3, self.accelerometer, self.scale, self.bees_out, self.bees_in, self.weight, self.frequency)
 
     
 
