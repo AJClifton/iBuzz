@@ -14,7 +14,7 @@ class Database:
     database_lock = threading.Lock()
 
     column_names = ['serial_number', 'outside_humidity', 'outside_temperature', 'time', 'hive_number',
-                    'temperature_1', 'temperature_2', 'temperature_3', 'accelerometer', 'entrance', 'weight', 'frequency']
+                    'temperature_1', 'temperature_2', 'temperature_3', 'accelerometer', 'bees_out', 'bees_in', 'weight', 'frequency']
 
     def __init__(self, database_path="database.db"):
         """Manage a database used for storing sensor data.
@@ -40,7 +40,8 @@ class Database:
                                     temperature_2  NUMERIC,
                                     temperature_3  NUMERIC,
                                     accelerometer   NUMERIC,
-                                    entrance    INTEGER,
+                                    bees_out INTEGER,
+                                    bees_in INTEGER,
                                     weight  NUMERIC,
                                     frequency NUMERIC,
                                     PRIMARY KEY(serial_number, hive_number, time)
@@ -133,7 +134,7 @@ class Database:
         end_time = time.time() if end_time is None else end_time
         # Validate the field value to prevent SQL injections
         if field not in self.column_names:
-            raise Exception(KeyError)
+            raise KeyError
         cursor = self.connection.cursor()
         cursor.execute(f"""SELECT time, {field} FROM Data WHERE serial_number = ? and hive_number = ? and time > ? and time < ? ORDER BY time ASC""",
                        (serial_number, hive_number, start_time, end_time))

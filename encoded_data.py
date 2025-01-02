@@ -19,8 +19,11 @@ def extract_outside_humidity_and_temperature(data):
 
 
 def extract_custom_data(data):
-    extracted_data = extract_data(data, [1, 2, 2, 18], [True, True, False, False])
-    return extract_data[0], extracted_data[1] / 10
+    # name(position,size)
+    # hive_number(0,1), temperature_1(1,2), temperature_2(2,2), temperature_3(3,2), humidity(4,1), scale(5,2), accelerometer(6,1), bees_in(7,1), bees_out(8,1), sound(9,3)
+    extracted_data = extract_data(data, [1, 2, 2, 2, 1, 2, 1, 1, 1, 3, 7], [True, True, True, True, True, True, True, True, True, True, False])
+    print(extracted_data[0], extracted_data[1] / 10, extracted_data[2] / 10, extracted_data[3] / 10, extracted_data[4], extracted_data[5], extracted_data[6], extracted_data[7], extracted_data[8], extracted_data[9])
+    return extracted_data[0], extracted_data[1] / 10, extracted_data[2] / 10, extracted_data[3] / 10, extracted_data[4], extracted_data[5], extracted_data[6], extracted_data[7], extracted_data[8], extracted_data[9]
 
 
 def extract_data(data, sizes, to_return, is_reversed=None, hex_string_check=None):
@@ -39,7 +42,7 @@ def extract_data(data, sizes, to_return, is_reversed=None, hex_string_check=None
     hex_data = base64.b64decode(data).hex()
     if hex_string_check is not None:
         if hex_string_check not in hex_data:
-            raise Exception(ValueError)
+            raise ValueError
     extracted_data = []
     for i in range(len(sizes)):
         section, hex_data = hex_data[:sizes[i] * 2], hex_data[sizes[i] * 2:]
