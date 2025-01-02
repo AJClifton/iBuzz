@@ -359,7 +359,7 @@
       this.values.forEach(value => {
         let td = document.createElement("td")
         td.innerText = value
-        tr.children.push(td)
+        tr.appendChild(td)
       })
       return tr
     }
@@ -621,13 +621,13 @@
       let thead = document.createElement("thead")
       let tr = document.createElement("tr")
       tr.setAttribute("data-sort-method", "None")
-      thead.children.push(tr)
+      thead.appendChild(tr)
       names.forEach(name => {
         let th = document.createElement("th")
         th.innerText(name)
-        tr.children.push(th)
+        tr.appendChild(th)
       })
-      document.getElementById("recent_values_table").children.push(thead)
+      document.getElementById("recent_values_table").appendChild(thead)
 
       serial_numbers.forEach(serial_number => {
         console.log(names, serial_number)
@@ -636,9 +636,9 @@
           for (const [hive_number, values] of Object.entries(recent_values)) {
             console.log(values, names)
             let r = new RecentValues(values, names)
-            tbody.children.push(r.make_tr())
+            tbody.appendChild(r.make_tr())
           }
-          document.getElementById("recent_values_table").children.push(tbody)
+          document.getElementById("recent_values_table").appendChild(tbody)
         })
       })
     }).then(() => {
