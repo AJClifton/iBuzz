@@ -333,7 +333,7 @@
     constructor(values, names) {
       this.values = values
       this.names = names
-      console.log(get_time_since())
+      console.log(this.get_time_since())
     }
 
     get_value_by_name(name) {
@@ -345,7 +345,7 @@
     }
 
     get_time_since() {
-      let sense_time = get_value_by_name('time')
+      let sense_time = this.get_value_by_name('time')
       return Math.round((new Date() / 1000) - sense_time) / 60
     }
   }
