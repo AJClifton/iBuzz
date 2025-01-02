@@ -216,7 +216,7 @@ class LoginDatabase:
                 return ValueError
             with self.connection:
                 self.connection.execute("""INSERT INTO Notifications VALUES (?, ?, ?, ?, ?, ?, ?)""",
-                                        (uuid.uuid4(), user_id, serial_number, hive_number, sensor, sign, float(value)))
+                                        (str(uuid.uuid4()), user_id, serial_number, hive_number, sensor, sign, float(value)))
         except sqlite3.IntegrityError:
             # Only occurs if the uuid4 isn't unique. Reattempting should fix this.
             self.add_notification(user_id, serial_number, hive_number, sensor, sign, value)
