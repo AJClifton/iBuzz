@@ -242,6 +242,8 @@
 
       <canvas class="my-4 w-100" id="myChart" width="900" height="380"></canvas>
 
+      <table id="recent_values_table"></table>    
+
     </main>
   </div>
 </div>
@@ -253,6 +255,9 @@
 <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom"></script>
 <script src="https://cdn.jsdelivr.net/npm/luxon@3.4.4/build/global/luxon.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chartjs-scale-timestack/dist/chartjs-scale-timestack.min.js"></script>
+<script src="https://cdn.datatables.net/2.1.8/css/dataTables.dataTables.min.css"></script>
+<script src="https://cdn.datatables.net/2.1.8/js/dataTables.min.js"></script>
+
 
 <script>
 
@@ -348,6 +353,17 @@
       let sense_time = this.get_value_by_name('time')
       return Math.round(((new Date() / 1000) - sense_time) / 60)
     }
+
+    make_tr() {
+      let tr = document.createElement("tr")
+      this.values.forEach(value => {
+        let td = document.createElement("td")
+        td.innerText = value
+        tr.children.push(td)
+      })
+      return tr
+    }
+    
   }
 
   function make_chart() {
@@ -602,15 +618,31 @@
   function add_recent_value_widgets(serial_numbers) {
     fetch('/names').then(r => r.json()).then(j => j['names']).then(names => {
       console.log(names)
+      let thead = document.createElement("thead")
+      let tr = document.createElement("tr")
+      tr.setAttribute("data-sort-method", None)
+      thead.children.push(tr)
+      names.forEach(name => {
+        let th = document.createElement("th")
+        th.innerText(name)
+        tr.children.push(th)
+      })
+      document.getElementById("recent_values_table").children.push(thead)
+
       serial_numbers.forEach(serial_number => {
         console.log(names, serial_number)
         fetch('/recent_values/' + serial_number).then(r => r.json()).then(j => j['recent_values']).then(recent_values => {
+          let tbody = document.createElement("tbody")
           for (const [hive_number, values] of Object.entries(recent_values)) {
             console.log(values, names)
             let r = new RecentValues(values, names)
+            tbody.children.push(r.make_tr())
           }
+          document.getElementById("recent_values_table").children.push(tbody)
         })
       })
+    }).then(() => {
+      let table = new DataTable('#recent_values_table')
     })
   }
 
