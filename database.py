@@ -126,7 +126,7 @@ class Database:
                 if notification_method is not None:
                     previous_values = all_previous_values[str(hive.hive_number)]
                     previous_weather_station_data = WeatherStationData(serial_number, previous_values[1], previous_values[2])
-                    previous_hive_data = WeatherStationData(previous_values[4], previous_values[5], previous_values[6], previous_values[7], previous_values[8], previous_values[9], previous_values[10], previous_values[11], previous_values[12], previous_values[13])
+                    previous_hive_data = HiveData(previous_values[4], previous_values[5], previous_values[6], previous_values[7], previous_values[8], previous_values[9], previous_values[10], previous_values[11], previous_values[12], previous_values[13])
                     notification_method(weather_station, hive, previous_weather_station_data, previous_hive_data)
                 self.connection.execute(
                     "INSERT INTO Data VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
