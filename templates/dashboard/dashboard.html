@@ -493,7 +493,7 @@
     for (let i = 0; i < datasets.length; i++) {
       if (datasets[i].long_name === name) {
         datasets[i].removeDataset()
-        array.splice(i, 1);
+        datasets.splice(i, 1);
         break
       } 
     }
