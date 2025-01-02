@@ -321,15 +321,6 @@
     fetchAllData() {
       fetch_data(this.serial_number, this.hive_number, this.sensor).then((r) => this.addData(r))
     }
-
-    get_data() {
-      return this.data;
-    }    
-
-  }
-
-  async function get_data(field) {
-    await fetch_data(field).then(() => make_chart(field))
   }
 
   function make_chart() {
@@ -377,29 +368,9 @@
     })
   }
 
-  function add_dataset(dataset) {
-    if (datasets.includes(dataset)) {
-      return
-    }
-    datasets.push(dataset)
-    fetch_data(dataset).then(() => _add_dataset(field))
-  }
 
-  function _add_dataset(dataset) {
-    myChart.data.datasets.push({
-      label: dataset,
-      data: fetched_data[dataset],
-      parsing: {
-        xAxisKey: 't',
-        yAxisKey: 'y',
-      },
-      segment: {
-            borderColor: defaultColour,
-          },
-    })
-    myChart.update()
-  }
-
+  /* NEEDS TO BE UPDATED */
+  /* Fetch data for all existing datasets starting from the time of the most recent value */
   async function fetch_updated_data() {
     for (let i = 0; i < datasets.length; i++) {
       let existing_dataset = fetched_data[datasets[i]]
@@ -417,6 +388,7 @@
     }
   }
 
+  /* Fetch data for a sensor for a given serial_number and hive_number */
   async function fetch_data(serial_number, hive_number, field) {
     return fetch("/data/" + serial_number + "/" + hive_number + "/" + field).then((r) => {
       if (!r.ok) {
@@ -426,6 +398,7 @@
     })
   }
 
+  /* Get the names of the available sensors */
   function get_sensor_names(serial_number, hive_number) {
     fetch('/names')
             .then(r => r.json())
@@ -435,8 +408,8 @@
   }
 
   function add_sensor_option_dropdown(name, serial_number, hive_number) {
-    long_name_printable = serial_number + " - " + hive_number + " - " + name
-    long_name = serial_number + "_" + hive_number + "_" + name
+    let long_name_printable = serial_number + " - " + hive_number + " - " + name
+    let long_name = serial_number + "_" + hive_number + "_" + name
     let div = document.createElement('div')
     div.setAttribute('class', 'dropdown')
     div.setAttribute('id', long_name)
