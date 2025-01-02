@@ -117,11 +117,11 @@ class Database:
                         except Exception as e:
                             error_logger.log_error(e)
 
-            with self.connection:
-                for hive in hives:
-                    self.connection.execute(
-                        "INSERT INTO Data VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
-                        (*weather_station.get_data(), *hive.get_data()))
+        with self.connection:
+            for hive in hives:
+                self.connection.execute(
+                    "INSERT INTO Data VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                    (*weather_station.get_data(), *hive.get_data()))
 
     def fetch_field(self, serial_number, hive_number, field, start_time=0, end_time=None):
         """Return the time column and the given column.
