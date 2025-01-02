@@ -29,47 +29,40 @@ class Notifications:
         user = self.login_db.fetch_hawk_owner(serial_number)
         for notification in notifications:
             hive_number, sensor, sign, value = notification[3], notification[4], notification[5], notification[6]
-            print(hive_number, sensor, sign, value)
             # There may be a better way to do this... perhaps this should be in the HiveData classes.
-            current_sensor_value = None
-            previous_sensor_value = None
-            if hive_number == None:
-                if sensor == "outside_temperature":
-                    current_sensor_value = current_weather_station_data.outside_temperature
-                    previous_sensor_value = previous_weather_station_data.outside_temperature
-                elif sensor == "outside_humidity":
-                    current_sensor_value = current_weather_station_data.outside_humidity
-                    previous_sensor_value = previous_weather_station_data.outside_humidity
-                else:
-                    continue
-            elif hive_number == current_hive_data.hive_number:
-                if sensor == "temperature_1":
-                    current_sensor_value = current_hive_data.temperature_1
-                    previous_sensor_value = previous_hive_data.temperature_1
-                elif sensor == "temperature_2":
-                    current_sensor_value = current_hive_data.temperature_2
-                    previous_sensor_value = previous_hive_data.temperature_2
-                elif sensor == "temperature_3":
-                    current_sensor_value = current_hive_data.temperature_3
-                    previous_sensor_value = previous_hive_data.temperature_3
-                elif sensor == "humidity":
-                    current_sensor_value = current_hive_data.humidity
-                    previous_sensor_value = previous_hive_data.humidity
-                elif sensor == "weight":
-                    current_sensor_value = current_hive_data.weight
-                    previous_sensor_value = previous_hive_data.weight
-                elif sensor == "accelerometer":
-                    current_sensor_value = current_hive_data.accelerometer
-                    previous_sensor_value = previous_hive_data.accelerometer
-                elif sensor == "bees_out":
-                    current_sensor_value = current_hive_data.bees_out
-                    previous_sensor_value = previous_hive_data.bees_out
-                elif sensor == "bees_in":
-                    current_sensor_value = current_hive_data.bees_in
-                    previous_sensor_value = previous_hive_data.bees_in
-                elif sensor == "frequency":
-                    current_sensor_value = current_hive_data.frequency
-                    previous_sensor_value = previous_hive_data.frequency
+            if sensor == "outside_temperature":
+                current_sensor_value = current_weather_station_data.outside_temperature
+                previous_sensor_value = previous_weather_station_data.outside_temperature
+            elif sensor == "outside_humidity":
+                current_sensor_value = current_weather_station_data.outside_humidity
+                previous_sensor_value = previous_weather_station_data.outside_humidity
+            elif sensor == "temperature_1":
+                current_sensor_value = current_hive_data.temperature_1
+                previous_sensor_value = previous_hive_data.temperature_1
+            elif sensor == "temperature_2":
+                current_sensor_value = current_hive_data.temperature_2
+                previous_sensor_value = previous_hive_data.temperature_2
+            elif sensor == "temperature_3":
+                current_sensor_value = current_hive_data.temperature_3
+                previous_sensor_value = previous_hive_data.temperature_3
+            elif sensor == "humidity":
+                current_sensor_value = current_hive_data.humidity
+                previous_sensor_value = previous_hive_data.humidity
+            elif sensor == "weight":
+                current_sensor_value = current_hive_data.weight
+                previous_sensor_value = previous_hive_data.weight
+            elif sensor == "accelerometer":
+                current_sensor_value = current_hive_data.accelerometer
+                previous_sensor_value = previous_hive_data.accelerometer
+            elif sensor == "bees_out":
+                current_sensor_value = current_hive_data.bees_out
+                previous_sensor_value = previous_hive_data.bees_out
+            elif sensor == "bees_in":
+                current_sensor_value = current_hive_data.bees_in
+                previous_sensor_value = previous_hive_data.bees_in
+            elif sensor == "frequency":
+                current_sensor_value = current_hive_data.frequency
+                previous_sensor_value = previous_hive_data.frequency
             else:
                 continue
             if sign == ">" and current_sensor_value > value and not previous_sensor_value > value:
