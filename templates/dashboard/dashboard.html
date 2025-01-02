@@ -494,6 +494,7 @@
       if (datasets[i].long_name === name) {
         datasets[i].removeDataset()
         array.splice(i, 1);
+        break
       } 
     }
     document.getElementById(name).remove()
