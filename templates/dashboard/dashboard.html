@@ -341,7 +341,7 @@
       this.names = names
       console.log(this.get_time_since())
       let time_index = this.names.indexOf("time")
-      this.names.splice(time_index, 1, this.get_time_since())
+      this.values.splice(time_index, 1, this.get_time_since())
     }
 
     get_value_by_name(name) {
