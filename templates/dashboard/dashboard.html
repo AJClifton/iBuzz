@@ -270,7 +270,10 @@
 
   function setup() {
     make_chart()
-    fetch_hawk_serial_numbers()
+    fetch_hawk_serial_numbers().then(serial_numbers => {
+      add_hawk_sensor_dropdowns(serial_numbers)
+      add_recent_value_widgets(serial_numbers)
+    })
   }
 
   class SensorData {
@@ -321,6 +324,29 @@
 
     fetchAllData() {
       fetch_data(this.serial_number, this.hive_number, this.sensor).then((r) => this.addData(r))
+    }
+  }
+
+
+  class RecentValues {
+
+    constructor(values, names) {
+      this.values = values
+      this.names = names
+      console.log(get_time_since())
+    }
+
+    get_value_by_name(name) {
+      let index = names.indexOf(name)
+      if (index > -1) {
+        return values[index]
+      }
+      return null
+    }
+
+    get_time_since() {
+      let sense_time = get_value_by_name('time')
+      return Math.round((new Date() / 1000) - sense_time) / 60
     }
   }
 
@@ -540,7 +566,7 @@
   }
 
   function fetch_hawk_serial_numbers() {
-    fetch("/serial_numbers").then((r) => r.json()).then((json) => add_hawk_sensor_dropdowns(json['serial_numbers']))
+    return fetch("/serial_numbers").then((r) => r.json()).then((json) => json['serial_numbers'])
   }
 
   function add_hawk_sensor_dropdowns(serial_numbers) {
@@ -571,6 +597,20 @@
         });
       })
     });
+  }
+
+
+  function add_recent_value_widgets(serial_numbers) {
+    fetch('/names').then(r => r.json()['names']).then(names => {
+      serial_numbers.forEach(serial_number => {
+        fetch('/recent_values/' + serial_number).then(r => r.json()['recent_values']).then(recent_values => {
+          for (const [hive_number, values] of Object.entries(recent_values)) {
+            console.log(values, names)
+            let r = RecentValues(values, names)
+          }
+        })
+      })
+    })
   }
 
 </script>
