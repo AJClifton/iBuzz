@@ -341,22 +341,13 @@
       this.names = names
       console.log(values, names);
 
-      let time_index = this.names.indexOf("time");
-      console.log(time_index)
-      let time_since = this.get_time_since();
-      console.log("time_since", time_since);
-      this.values[time_index] = time_since;
-      this.names[time_index] = "Minutes Since Last Update";
-
-      console.log(values,names);
-      
-      [this.names[3], this.names[4]] = [this.names[4], this.names[3]];
-      [this.names[1], this.names[3]] = [this.names[3], this.names[1]];
-      [this.names[2], this.names[4]] = [this.names[4], this.names[2]];
-
       [this.values[3], this.values[4]] = [this.values[4], this.values[3]];
       [this.values[1], this.values[3]] = [this.values[3], this.values[1]];
       [this.values[2], this.values[4]] = [this.values[4], this.values[2]];
+
+      let time_since = Math.round(((new Date() / 1000) - this.values[2]) / 60)
+      console.log("time_since", time_since);
+      this.values[2] = time_since;
 
     }
 
@@ -647,7 +638,7 @@
       [names[3], names[4]] = [names[4], names[3]];
       [names[1], names[3]] = [names[3], names[1]];
       [names[2], names[4]] = [names[4], names[2]];
-      names.splice(2, 1, "Minutes Since Last Update");
+      names[2] = "Minutes Since Last Update";
       names.forEach(name => {
         let th = document.createElement("th")
         th.innerText = name
