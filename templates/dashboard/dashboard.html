@@ -114,7 +114,7 @@
 </head>
 
 
-<body onload="get_sensor_names()">
+<body onload="setup()">
 
 <svg xmlns="http://www.w3.org/2000/svg" class="d-none">
   <symbol id="calendar3" viewBox="0 0 16 16">
@@ -196,25 +196,8 @@
           <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#sidebarMenu" aria-label="Close"></button>
         </div>
         <div class="offcanvas-body d-md-flex flex-column p-0 pt-lg-3 overflow-y-auto" style="height: 100vh">
-          <ul class="nav flex-column">
-            <li>
-              <div class="dropdown">
-                <button class="btn btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                  Add Sensor
-                </button>
-                <div class="dropdown-menu">
-                  <div class="d-block position-static pt-0 mx-0 rounded-3 shadow overflow-hidden w-280px" data-bs-theme="light">
-                    <form class="dropdown-item p-2 mb-2 bg-body-tertiary border-bottom">
-                      <input type="search" class="form-control" autocomplete="false" placeholder="Type to filter...">
-                    </form>
-                      <ul class="list-unstyled mb-0" id="sensor_add_dropdown">
-
-                      </ul>
-                  </div>
-                </div>
-              </div>
-            </li>
-          </ul>
+          
+          <div id="add-sensor-parent"></div>
 
           <hr class="my-3">
           
@@ -285,35 +268,71 @@
   const defaultColour = 'rgb(42, 195, 212)'
   const defaultPointRadius = 3
 
+  function setup() {
+    make_chart()
+    fetch_hawk_serial_numbers()
+  }
+
   class SensorData {
     constructor(serial_number, hive_number, sensor, json) {
       this.serial_number = serial_number
       this.hive_number = hive_number
       this.sensor = sensor
       this.data = []
-      addData(json)
+      this.long_name = serial_number + "_" + hive_number + "_" + sensor
+      this.addData(json)
+
+      this.chartjs_dataset = {
+        long_name: this.long_name,
+        label: sensor,
+        data: this.data,
+        parsing: {
+          xAxisKey: 't',
+          yAxisKey: 'y',
+        },
+        segment: {
+              borderColor: defaultColour,
+            },
+      }
+
+      myChart.data.datasets.push(this.chartjs_dataset)
     };
 
+    removeDataset() {
+      let removalIndex = myChart.data.datasets.indexOf(this.chartjs_dataset)
+      if(removalIndex >= 0) {
+          myChart.data.datasets.splice(removalIndex, 1);
+      }
+    }
+
     addData(json) {
-      let times = json['Time']
-      let sensor_data = json[field]
+      if (Object.keys(json).length === 0) {
+        return
+      }
+      let times = json['time']
+      let sensor_data = json[this.sensor]
       for (let i = 0; i < times.length; i++) {
         this.data.push({t:times[i]*1000, y:sensor_data[i]})
       }
+      console.log(this.data)
+      myChart.update()
     };
 
-    get data() {
+    fetchAllData() {
+      fetch_data(this.serial_number, this.hive_number, this.sensor).then((r) => this.addData(r))
+    }
+
+    get_data() {
       return this.data;
     }    
 
   }
 
   async function get_data(field) {
-    await fetch_data(field, make_chart)
+    await fetch_data(field).then(() => make_chart(field))
   }
 
-  function make_chart(field) {
-    datasets.push(field)
+  function make_chart() {
     myChart.destroy()
     myChart = new Chart(ctx, {
       type: 'line',
@@ -353,17 +372,7 @@
         },
       },
       data: {
-        datasets: [{
-          label: field,
-          data: fetched_data[field],
-          parsing: {
-            xAxisKey: 't',
-            yAxisKey: 'y',
-          },
-          segment: {
-            borderColor: defaultColour,
-          },
-        }]
+        datasets: []
       }
     })
   }
@@ -373,7 +382,7 @@
       return
     }
     datasets.push(dataset)
-    fetch_data(dataset, _add_dataset)
+    fetch_data(dataset).then(() => _add_dataset(field))
   }
 
   function _add_dataset(dataset) {
@@ -396,7 +405,7 @@
       let existing_dataset = fetched_data[datasets[i]]
       fetch("/data/" + datasets[i] + "/" + existing_dataset[existing_dataset.length - 1]['t']/1000).then((r) => r.json()).then((json) => {
         console.log(json)
-        let times = json['Time']
+        let times = json['time']
         let data = json[datasets[i]]
         for (let k = 0; k < times.length; k++) {
           let d = {t: times[k] * 1000, y: data[k]}
@@ -408,73 +417,32 @@
     }
   }
 
-  async function fetch_data(field, _callback) {
-    fetch("/data/" + field).then((r) => {
+  async function fetch_data(serial_number, hive_number, field) {
+    return fetch("/data/" + serial_number + "/" + hive_number + "/" + field).then((r) => {
       if (!r.ok) {
         throw new Error("Bad Request")
       }
       return r.json()
-    }).then((json) => {
-      console.log(json)
-      let times = json['Time']
-      let data = json[field]
-      let reformatted = []
-      for (let i = 0; i < times.length; i++) {
-        reformatted.push({t:times[i]*1000, y:data[i]})
-      }
-      console.log(reformatted)
-      fetched_data[field] = reformatted
-    }).then(() => _callback(field))
+    })
   }
 
-  function get_sensor_names() {
+  function get_sensor_names(serial_number, hive_number) {
     fetch('/names')
             .then(r => r.json())
             .then(json => {
-              json['names'].forEach((name) => add_sensor_option(name))
+              json['names'].forEach((name) => add_sensor_option(name, serial_number, hive_number))
             })
   }
 
-
-  /**
-   *  <div class="dropdown">
-        <button class="btn btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-          Outside Temperature
-        </button>
-        <ul class="dropdown-menu" style="">
-          <li><h6 class="dropdown-header">Graph Options</h6></li>
-          <li>
-            <div style="display: inline-block;">
-              <div class="input-group mb-3" style="float: left; width: 60%;">
-                <span class="input-group-text" id="basic-addon1">Highlight Above</span>
-                <input type="text" class="form-control" placeholder="20" aria-label="Value" aria-describedby="basic-addon1">
-              </div>
-              <input type="color" class="form-control form-control-color" id="myColor" value="#CCCCCC" title="Choose a color" style="float: left;">
-            </div>
-          </li>
-          <li>
-            <div style="display: inline-block;">
-              <div class="input-group mb-3" style="float: left; width: 60%;">
-                <span class="input-group-text" id="basic-addon1">Highlight Below</span>
-                <input type="text" class="form-control" placeholder="20" aria-label="Value" aria-describedby="basic-addon1">
-              </div>
-              <input type="color" class="form-control form-control-color" id="myColor" value="#CCCCCC" title="Choose a color" style="float: left;">
-            </div>
-          </li>
-          <li><hr class="dropdown-divider"></li>
-          <li><button class="dropdown-item" >Remove</button></li>
-        </ul>
-      </div>
-   **/
-
-
-  function add_sensor_option_dropdown(name) {
+  function add_sensor_option_dropdown(name, serial_number, hive_number) {
+    long_name_printable = serial_number + " - " + hive_number + " - " + name
+    long_name = serial_number + "_" + hive_number + "_" + name
     let div = document.createElement('div')
     div.setAttribute('class', 'dropdown')
-    div.setAttribute('id', name)
+    div.setAttribute('id', long_name)
     div.innerHTML = `
         <button class="btn btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-              `+ name + `
+              `+ long_name_printable + `
             </button>
             <ul class="dropdown-menu" style="">
               <li><h6 class="dropdown-header">Graph Options</h6></li>
@@ -482,45 +450,45 @@
                 <div style="display: inline-block;">
                   <div class="input-group mb-3" style="float: left; width: 60%;">
                     <span class="input-group-text" id="basic-addon1">Highlight Above</span>
-                    <input type="text" class="form-control" placeholder="20" aria-label="Value" aria-describedby="basic-addon1" id="`+ name + "above_value" + `">
+                    <input type="text" class="form-control" placeholder="20" aria-label="Value" aria-describedby="basic-addon1" id="`+ long_name + "above_value" + `">
                   </div>
-                  <input type="color" class="form-control form-control-color" id="`+ name + "above_colour" + `" value="#CCCCCC" title="Choose a color" style="float: left;">
-                  <button class="btn btn-light" style="float: left;" id=` + name + "above_apply" + `>Apply</button>
+                  <input type="color" class="form-control form-control-color" id="`+ long_name + "above_colour" + `" value="#CCCCCC" title="Choose a color" style="float: left;">
+                  <button class="btn btn-light" style="float: left;" id=` + long_name + "above_apply" + `>Apply</button>
                 </div>
               </li>
               <li>
                 <div style="display: inline-block;">
                   <div class="input-group mb-3" style="float: left; width: 60%;">
                     <span class="input-group-text" id="basic-addon1">Highlight Below</span>
-                    <input type="text" class="form-control" placeholder="20" aria-label="Value" aria-describedby="basic-addon1"id="`+ name + "below_value" + `">
+                    <input type="text" class="form-control" placeholder="20" aria-label="Value" aria-describedby="basic-addon1"id="`+ long_name + "below_value" + `">
                   </div>
-                  <input type="color" class="form-control form-control-color" id="`+ name + "below_colour" + `" value="#CCCCCC" title="Choose a color" style="float: left;">
-                  <button class="btn btn-light" style="float: left;" id=` + name + "below_apply" + `>Apply</button>
+                  <input type="color" class="form-control form-control-color" id="`+ long_name + "below_colour" + `" value="#CCCCCC" title="Choose a color" style="float: left;">
+                  <button class="btn btn-light" style="float: left;" id=` + long_name + "below_apply" + `>Apply</button>
                 </div>
               </li>
               <li>
                 <div style="display: inline-block;">
-                  <input type="color" class="form-control form-control-color" id="`+ name + "line_colour" + `" value="#CCCCCC" title="Choose a color" style="float: left;">
-                  <button class="btn btn-light" style="float: left;" id=` + name + "line_apply" + `>Apply</button>
+                  <input type="color" class="form-control form-control-color" id="`+ long_name + "line_colour" + `" value="#CCCCCC" title="Choose a color" style="float: left;">
+                  <button class="btn btn-light" style="float: left;" id=` + long_name + "line_apply" + `>Apply</button>
                 </div>
               </li>
               <li><hr class="dropdown-divider"></li>
-              <li><button class="dropdown-item" id=` + name + "remove" + `>Remove</button></li>
+              <li><button class="dropdown-item" id=` + long_name + "remove" + `>Remove</button></li>
             </ul>
         `
     document.getElementById("sensor-options-parent").appendChild(div);
-    document.getElementById(name + "above_apply").onclick = () => {change_highlight_above(name, document.getElementById(name+"above_value").value, document.getElementById(name+"above_colour").value, document.getElementById(name+"line_colour").value)}
-    document.getElementById(name + "below_apply").onclick = () => {change_highlight_below(name, document.getElementById(name+"below_value").value, document.getElementById(name+"below_colour").value, document.getElementById(name+"line_colour").value)}
-    document.getElementById(name + "line_apply").onclick = () => {change_line_colour(name, document.getElementById(name+"line_colour").value)}
-    document.getElementById(name + "remove").onclick = () => {remove_dataset(name)}
+    document.getElementById(long_name + "above_apply").onclick = () => {change_highlight_above(long_name, document.getElementById(long_name+"above_value").value, document.getElementById(long_name+"above_colour").value, document.getElementById(long_name+"line_colour").value)}
+    document.getElementById(long_name + "below_apply").onclick = () => {change_highlight_below(long_name, document.getElementById(long_name+"below_value").value, document.getElementById(long_name+"below_colour").value, document.getElementById(long_name+"line_colour").value)}
+    document.getElementById(long_name + "line_apply").onclick = () => {change_line_colour(long_name, document.getElementById(long_name+"line_colour").value)}
+    document.getElementById(long_name + "remove").onclick = () => {remove_dataset(long_name)}
   }
 
 
   function change_line_colour(name, colour) {
     console.log(name, colour)
-    myChart.data.datasets.forEach(element => {
-      if (element.label === name) {
-        element.segment.borderColor = colour
+    datasets.forEach(element => {
+      if (element.long_name === name) {
+        element.chartjs_dataset.segment.borderColor = colour
         myChart.update()
       }
     });
@@ -529,9 +497,9 @@
 
   function change_highlight_above(name, value, colour, default_colour) {
     console.log(name, value, colour)
-    myChart.data.datasets.forEach(element => {
-      if (element.label === name) {
-        element.segment.borderColor = ctx => aboveValue(ctx, value, colour, default_colour)
+    datasets.forEach(element => {
+      if (element.long_name === name) {
+        element.chartjs_dataset.segment.borderColor = ctx => aboveValue(ctx, value, colour, default_colour)
         myChart.update()
       }
     });
@@ -539,9 +507,9 @@
 
   function change_highlight_below(name, value, colour, default_colour) {
     console.log(name, value, colour)
-    myChart.data.datasets.forEach(element => {
-      if (element.label === name) {
-        element.segment.borderColor = ctx => belowValue(ctx, value, colour, default_colour)
+    datasets.forEach(element => {
+      if (element.long_name === name) {
+        element.chartjs_dataset.segment.borderColor = ctx => belowValue(ctx, value, colour, default_colour)
         myChart.update()
       }
     });
@@ -549,10 +517,14 @@
 
 
   function remove_dataset(name) {
-    delete fetched_data.name
-    myChart.data.datasets = myChart.data.datasets.filter(d => d.label !== name)
-    myChart.update()
+    datasets.forEach(dataset => {
+      if (dataset.long_name === name) {
+        dataset.removeDataset()
+        datasets.pop(dataset)
+      } 
+    });
     document.getElementById(name).remove()
+    myChart.update()
   }
 
 
@@ -561,26 +533,71 @@
     Separated link
   </a></li>**/
 
-  function add_sensor_option(name) {
+  function add_sensor_option(name, serial_number, hive_number) {
     let button = document.createElement("button")
     button.className = "dropdown-item d-flex align-items-center gap-2 py-2"
     button.innerText = name
     if (Object.keys(fetched_data).includes(name)) {
       return
     }
-    button.onclick = () => {
+    /**button.onclick = () => {
       myChart.data.datasets.length !== 0 ? fetch_data(name, add_dataset) : fetch_data(name, make_chart)
       add_sensor_option_dropdown(name)
+    }**/
+    button.onclick = () => {
+      datasets.forEach(element => {
+        if (element.sensor == name) {
+          return
+        }
+      });
+      let new_dataset = new SensorData(serial_number, hive_number, name, {})
+      new_dataset.fetchAllData()
+      datasets.push(new_dataset)
+      add_sensor_option_dropdown(name, serial_number, hive_number)
     }
     let li = document.createElement("li")
     li.appendChild(button)
-    document.getElementById("sensor_add_dropdown").appendChild(li)
+    document.getElementById("sensor_add_dropdown_" + serial_number + "_" + hive_number).appendChild(li)
   }
 
 
   function toggle_points() {
     myChart.options.elements.point.radius = myChart.options.elements.point.radius === defaultPointRadius ? 0 : defaultPointRadius
     myChart.update()
+  }
+
+  function fetch_hawk_serial_numbers() {
+    fetch("/serial_numbers").then((r) => r.json()).then((json) => add_hawk_sensor_dropdowns(json['serial_numbers']))
+  }
+
+  function add_hawk_sensor_dropdowns(serial_numbers) {
+    console.log(serial_numbers)
+    serial_numbers.forEach(serial_number => {
+      fetch("/hive_numbers/" + serial_number).then(r => r.json()).then(json => {
+        hive_numbers = json['hive_numbers']
+        console.log(hive_numbers)
+        hive_numbers.forEach(hive_number => {
+          document.getElementById("add-sensor-parent").innerHTML += `
+            <div class="dropdown">
+              <button class="btn btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                ` + serial_number + ` - ` + hive_number + `
+              </button>
+              <div class="dropdown-menu">
+                <div class="d-block position-static pt-0 mx-0 rounded-3 shadow overflow-hidden w-280px" data-bs-theme="light">
+                  <form class="dropdown-item p-2 mb-2 bg-body-tertiary border-bottom">
+                    <input type="search" class="form-control" autocomplete="false" placeholder="Type to filter...">
+                  </form>
+                    <ul class="list-unstyled mb-0" id="sensor_add_dropdown_` + serial_number + "_" + hive_number + `">
+
+                    </ul>
+                </div>
+              </div>
+            </div>
+          `
+          get_sensor_names(serial_number, hive_number)
+        });
+      })
+    });
   }
 
 </script>

@@ -40,6 +40,16 @@ class LoginDatabase:
                                     serial_number INTEGER,
                                     PRIMARY KEY(user_id, serial_number)
                                 );""")
+            self.connection.execute("""CREATE TABLE Notifications (
+                                    notification_id TEXT,
+                                    user_id TEXT,
+                                    serial_number INTEGER,
+                                    hive_number INTEGER,
+                                    sensor TEXT,
+                                    sign TEXT,
+                                    value NUMERIC,
+                                    PRIMARY KEY(notification_id)
+                                ):""")
 
     def close(self):
         """Close database connection."""
@@ -191,5 +201,55 @@ class LoginDatabase:
         owned_serial_number = cursor.fetchone()
         if owned_serial_number is not None:
             if owned_serial_number not in serial_numbers:
-                serial_numbers.insert(0, owned_serial_number)
+                serial_numbers.insert(0, owned_serial_number[0])
         return serial_numbers
+    
+    def add_notification(self, user_id, serial_number, hive_number, sensor, sign, value):
+        """Add a notification to the database.
+        
+        :raises PermissionError: if user_id isn't the owner of the hawk 'serial_number'"""
+        if not self.check_hawk_ownership(user_id, serial_number):
+            raise PermissionError
+        try:
+            with self.connection:
+                self.connection.execute("""INSERT INTO Notifications VALUES (?, ?, ?, ?, ?, ?, ?)""",
+                                        (uuid.uuid4(), user_id, serial_number, hive_number, sensor, sign, value))
+        except sqlite3.IntegrityError:
+            # Only occurs if the uuid4 isn't unique. Reattempting should fix this.
+            self.add_notification(user_id, serial_number, hive_number, sensor, sign, value)
+        
+    def remove_notification(self, user_id, notification_id):
+        """Remove a notification from the database.
+        
+        :raises PermissionError: if the notification doesn't belong to user_id."""
+        cursor = self.connection.cursor()
+        cursor.execute("""SELECT user_id FROM Notifications WHERE notification_id = ?""", (notification_id, ))
+        notification_user_id = cursor.fetchone()
+
+        # If the notification doesn't exist, nothing needs to be done.
+        if notification_user_id is None:
+            return
+
+        if user_id == notification_user_id[0]:
+            with self.connection:
+                self.connection.execute("""DELETE FROM Notifications WHERE notification_id = ?""", (notification_id,))
+            return
+        else:
+            raise PermissionError
+    
+    def fetch_notifications(self, serial_number=None, user_id=None):
+        """Return all notifications linked to the given serial_number or user_id.
+        
+        :param serial_number: Serial Number assigned by Digital Matter to the Hawk
+        :param user_id: uuid of the user
+        :raises ValueError: if both serial_number and user_id are None"""
+        
+        cursor = self.connection.cursor()
+        if serial_number is not None:
+            cursor.execute("""SELECT * FROM Notifications WHERE serial_number = ?""", (serial_number, ))
+            return cursor.fetchall()
+        elif user_id is not None:
+            cursor.execute("""SELECT * FROM Notifications WHERE user_id = ?""", (serial_number, ))
+            return cursor.fetchall()
+        else:
+            raise ValueError

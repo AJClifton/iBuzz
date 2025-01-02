@@ -6,13 +6,14 @@ import threading
 import time
 import encoded_data
 import error_logger
+from replay_log import ReplayLog
 from hive_data import WeatherStationData, HiveData
 
 
 class Database:
     database_lock = threading.Lock()
 
-    column_names = ['serial_number', 'sequence_number', 'time', 'outside_temperature', 'outside_humidity',
+    column_names = ['serial_number', 'outside_humidity', 'outside_temperature', 'time', 'hive_number',
                     'temperature_1', 'temperature_2', 'temperature_3', 'accelerometer', 'entrance', 'weight', 'frequency']
 
     def __init__(self, database_path="database.db"):
@@ -21,7 +22,6 @@ class Database:
         Creates and manages an SQLite database for storing sensor data.
 
         'serial_number' is assigned by Digital Matter and is unique to the Hawk.
-        'sequence_number' increases every time the Hawk commits and provides a definitive order.
         'time' is the number of seconds since 1/1/1970.
         There are three internal temperature sensor slots available because that is the maximum allowed by this project's hardware.
         'entrance' is the number of bees going in and out of the hive.
@@ -43,8 +43,9 @@ class Database:
                                     entrance    INTEGER,
                                     weight  NUMERIC,
                                     frequency NUMERIC,
-                                    PRIMARY KEY(serial_number, sequence_number)
+                                    PRIMARY KEY(serial_number, hive_number, time)
                                 );""")
+        self.replay_log = ReplayLog()
 
     def data_received(self, json):
         """Run :func:'~database.Database._process_data' as a thread."""
@@ -71,7 +72,12 @@ class Database:
 
     def _process_data(self, json):
         """Extract and store the data values in the JSON from the Hawk."""
-        serial_number = json["SerNo"]
+        try:
+            serial_number = json["SerNo"]
+            self.replay_log.add_to_log(serial_number, json)
+        except:
+            self.replay_log.add_to_log("error", json)
+            print("Error determining serial_number: ", json)
         weather_station = None
         hives = []
         for record in json["Records"]:
@@ -115,7 +121,7 @@ class Database:
                         "INSERT INTO Data VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
                         (*weather_station.get_data(), *hive.get_data(), 0, 0, 0, 0, 0, 0))
 
-    def fetch_field(self, serial_number, field, start_time=0, end_time=None):
+    def fetch_field(self, serial_number, hive_number, field, start_time=0, end_time=None):
         """Return the time column and the given column.
 
         Return the time column and the given field column between start_time and end_time.
@@ -125,22 +131,40 @@ class Database:
         :type end_time: int or None
         :raises KeyError: if field isn't a database column"""
         end_time = time.time() if end_time is None else end_time
+        # Validate the field value to prevent SQL injections
         if field not in self.column_names:
             raise Exception(KeyError)
         cursor = self.connection.cursor()
-        cursor.execute("""SELECT time, ? FROM Data WHERE serial_number = ? and time > ? and time < ?""",
-                       (field, serial_number, start_time, end_time))
-        data = {'Time': [], str(field): []}
+        cursor.execute(f"""SELECT time, {field} FROM Data WHERE serial_number = ? and hive_number = ? and time > ? and time < ? ORDER BY time ASC""",
+                       (serial_number, hive_number, start_time, end_time))
+        data = {'time': [], str(field): []}
         for line in cursor.fetchall():
-            data['Time'].append(line[0])
-            data[field].append(line[1])
+            data['time'].append(line[0])
+            data[str(field)].append(line[1])
         cursor.close()
         return data
 
     def fetch_names(self):
         """Returns the column names for the Data table."""
         return self.column_names
+    
+    def fetch_most_recent_values(self, serial_number):
+        """Return the most recent values for each hive_number belonging to the given serial_number."""
+        hive_numbers = self.fetch_hive_numbers(serial_number)
+        most_recent_values = []
+        cursor = self.connection.cursor()
+        for hive_number in hive_numbers:
+            cursor.execute("""SELECT * FROM Data ORDER BY time DESC LIMIT 1 WHERE serial_number = ? and hive_number = ?""", (serial_number, hive_number))
+            values = cursor.fetchone()
+            if values is not None:
+                most_recent_values.append({'hive_number': hive_number, 'values':values})
+        return most_recent_values
 
-
-if __name__ == "__main__":
-    database = Database()
+    def fetch_hive_numbers(self, serial_number):
+        """Return all hive numbers associated with the given serial_number."""
+        cursor = self.connection.cursor()
+        cursor.execute("""SELECT DISTINCT hive_number from Data WHERE serial_number = ?""", (serial_number, ))
+        hive_numbers = []
+        for line in cursor.fetchall():
+            hive_numbers.append(line[0])
+        return hive_numbers

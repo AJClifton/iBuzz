@@ -1,17 +1,21 @@
 import sqlite3
-
 import flask
 import flask_login
 import database
 import error_logger
 import login_database
+import notifications
+import yaml
 
+
+config = yaml.safe_load(open("config.yaml"))
 app = flask.Flask(__name__, template_folder='templates')
-app.config['SECRET_KEY'] = 'iBuzz2FourthYearGroupDevelopmentProject'
+app.config['SECRET_KEY'] = config["secret_key"]
 db = database.Database()
 login_db = login_database.LoginDatabase()
 login_manager = flask_login.LoginManager(app)
 login_manager.login_view = "login"
+notification = notifications.Notifications(config["notifications_email"], config["notifications_email_password"])
 
 
 @app.route('/', methods=['GET'])
@@ -85,7 +89,7 @@ def send_template(path):
     return flask.send_from_directory('templates', path)
 
 
-@app.route('/data/<path:path>')
+@app.route('/data/<path:path>', methods=['GET'])
 def fetch_data(path):
     try:
         serial_number, field, *start_time = path.split("/")
@@ -95,75 +99,112 @@ def fetch_data(path):
         else:
             if not login_db.check_visibility_permissions(flask_login.current_user.id, serial_number):
                 return '', 400
-        return db.fetch_field(serial_number, field, 0 if len(start_time) == 0 else start_time[0])
+        return db.fetch_field(serial_number, field, (0 if len(start_time) == 0 else start_time[0]))
     except KeyError as e:
         error_logger.log_error(e)
         return {}
 
 
-@app.route('/names')
+@app.route('/names', methods=['GET'])
 def fetch_names():
     return {'names': db.fetch_names()}
 
 
-@app.route('/serial_numbers')
+@app.route('/serial_numbers', methods=['GET'])
+@flask_login.login_required
 def fetch_serial_numbers():
-    if isinstance(flask_login.current_user, flask_login.AnonymousUserMixin):
-        return '', 400
     return {'serial_numbers': login_db.fetch_visible_serial_numbers(flask_login.current_user.id)}
 
 
+@app.route('/hive_numbers/<path:path>', methods=['GET'])
+@flask_login.login_required
+def fetch_hive_numbers(path):
+    if login_db.check_visibility_permissions(flask_login.current_user.id, path):
+        return {'hive_numbers': db.fetch_hive_numbers(path)}
+    else:
+        return '', 400
+
+
+@app.route('/recent_values/<path:path>', methods=['GET'])
+@flask_login.login_required
+def fetch_recent_values(path):
+    if login_db.check_visibility_permissions(flask_login.current_user.id, path):
+        return {'recent_values': db.fetch_most_recent_values(path)}
+    else:
+        return '', 400
+
+
 @app.route('/register/<path:path>')
+@flask_login.login_required
 def register_hawk(path):
     try:
-        if isinstance(flask_login.current_user, flask_login.AnonymousUserMixin):
-            return '', 400
-        else:
-            login_db.register_hawk(flask_login.current_user.id, path)
+        login_db.register_hawk(flask_login.current_user.id, path)
     except (ValueError, sqlite3.IntegrityError) as e:
         return '', 400
     return '', 200
 
 
 @app.route('/deregister/<path:path>')
+@flask_login.login_required
 def deregister_hawk(path):
     try:
-        if isinstance(flask_login.current_user, flask_login.AnonymousUserMixin):
-            return '', 400
-        else:
-            login_db.deregister_hawk(flask_login.current_user.id, path)
+        login_db.deregister_hawk(flask_login.current_user.id, path)
     except (ValueError, PermissionError) as e:
         return '', 400
     return '', 200
 
 
 @app.route('/addvisibility/<path:path>')
+@flask_login.login_required
 def add_hawk_visibility(path):
     try:
-        if isinstance(flask_login.current_user, flask_login.AnonymousUserMixin):
-            return '', 400
-        else:
-            hawk_id, user_id, *other = path.split('/')
-            # if user-id is actually an email, fetch the user_id
-            if '@' in user_id:
-                user_id = login_db.fetch_user_by_email(user_id).id
-            login_db.add_hawk_visibility(flask_login.current_user.id, hawk_id, user_id)
+        hawk_id, user_id, *other = path.split('/')
+        # if user-id is actually an email, fetch the user_id
+        if '@' in user_id:
+            user_id = login_db.fetch_user_by_email(user_id).id
+        login_db.add_hawk_visibility(flask_login.current_user.id, hawk_id, user_id)
     except (ValueError, PermissionError) as e:
         return '', 400
     return '', 200
 
 
 @app.route('/removevisibility/<path:path>')
+@flask_login.login_required
 def remove_hawk_visibility(path):
     try:
-        if isinstance(flask_login.current_user, flask_login.AnonymousUserMixin):
-            return '', 400
-        else:
-            hawk_id, user_id, *other = path.split('/')
-            # if user-id is actually an email, fetch the user_id
-            if '@' in user_id:
-                user_id = login_db.fetch_user_by_email(user_id).id
-            login_db.remove_hawk_visibility(flask_login.current_user.id, hawk_id, user_id)
+        hawk_id, user_id, *other = path.split('/')
+        # if user-id is actually an email, fetch the user_id
+        if '@' in user_id:
+            user_id = login_db.fetch_user_by_email(user_id).id
+        login_db.remove_hawk_visibility(flask_login.current_user.id, hawk_id, user_id)
     except (ValueError, PermissionError) as e:
         return '', 400
     return '', 200
+
+
+@app.route('/add_notification/<path:path>')
+@flask_login.login_required
+def add_notification(path):
+    serial_number, hive_number, sensor, sign, value, *other = path.split('/')
+    try:
+        login_db.add_notification(flask_login.current_user.id, serial_number, hive_number, sensor, sign, value)
+    except PermissionError:
+        return '', 403
+    return '', 200
+
+
+@app.route('/remove_notification/<path:path>')
+@flask_login.login_required
+def remove_notification(path):
+    try:
+        login_db.remove_notification(flask_login.current_user.id, path)
+    except PermissionError:
+        return '', 400
+    return '', 200
+
+
+@app.route('/notifications')
+@flask_login.login_required
+def fetch_notifications():
+    return login_db.fetch_notifications(user_id=flask_login.current_user.id)
+
