@@ -340,11 +340,10 @@
       this.values = values
       this.names = names
       console.log(values, names)
-      console.log(new Date / 1000)
-      console.log(this.get_time_since());
 
       let time_index = this.names.indexOf("time")
       let time_since = this.get_time_since()
+      console.log("time_since", time_since)
       this.values.splice(time_index, 1, time_since)
       this.names.splice(time_index, 1, "Minutes Since Last Update")
 
