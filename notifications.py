@@ -29,6 +29,7 @@ class Notifications:
         user = self.login_db.fetch_hawk_owner(serial_number)
         for notification in notifications:
             hive_number, sensor, sign, value = notification[3], notification[4], notification[5], notification[6]
+            print(hive_number, sensor, sign, value)
             # There may be a better way to do this... perhaps this should be in the HiveData classes.
             if sensor == "outside_temperature":
                 current_sensor_value = current_weather_station_data.outside_temperature
@@ -65,6 +66,7 @@ class Notifications:
                 previous_sensor_value = previous_hive_data.frequency
             else:
                 continue
+            print(hive_number, sensor, sign, value, current_sensor_value, previous_sensor_value, user.email)
             if sign == ">" and current_sensor_value > value and not previous_sensor_value > value:
                     self.send_email_notification(user.email, f"iBuzz ALERT {sensor}", f"{sensor} in hive '{serial_number} - {hive_number}' was detected at {current_sensor_value} which is greater than your threshold of {value}")
                     continue

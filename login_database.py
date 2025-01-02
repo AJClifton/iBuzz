@@ -252,7 +252,7 @@ class LoginDatabase:
             cursor.execute("""SELECT * FROM Notifications WHERE serial_number = ?""", (serial_number, ))
             return cursor.fetchall()
         elif user_id is not None:
-            cursor.execute("""SELECT * FROM Notifications WHERE user_id = ?""", (serial_number, ))
+            cursor.execute("""SELECT * FROM Notifications WHERE user_id = ?""", (user_id, ))
             return cursor.fetchall()
         else:
             raise ValueError
