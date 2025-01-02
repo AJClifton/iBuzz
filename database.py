@@ -82,7 +82,7 @@ class Database:
         hives = []
         for record in json["Records"]:
             date = record["DateUTC"]
-            time = calendar.timegm(record['DateUTC'].strptime(date, '%Y-%m-%d %H:%M:%S'))
+            epoch_time = calendar.timegm(time.strptime(date, '%Y-%m-%d %H:%M:%S'))
             outside_humidity, outside_temperature = None, None
             temperature_1 = 0
 
@@ -98,7 +98,7 @@ class Database:
                                 weather_station = WeatherStationData(*encoded_data.extract_outside_humidity_and_temperature(tag.get("Data")))
                             except ValueError:
                                 new_hive = HiveData(*encoded_data.extract_custom_data(tag.get("Data")))
-                                new_hive.set_time(time)
+                                new_hive.set_time(epoch_time)
                                 hives = self._compare_and_add_hive(hives, new_hive)
                         except Exception as e:
                             error_logger.log_error(e)
@@ -110,7 +110,7 @@ class Database:
                                 weather_station = WeatherStationData(*encoded_data.extract_outside_humidity_and_temperature(data_str))
                             except ValueError:
                                 new_hive = HiveData(*encoded_data.extract_custom_data(data_str))
-                                new_hive.set_time(time)
+                                new_hive.set_time(epoch_time)
                                 hives = self._compare_and_add_hive(hives, new_hive)
                         except Exception as e:
                             error_logger.log_error(e)
