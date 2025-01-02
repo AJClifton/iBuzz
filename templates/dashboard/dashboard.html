@@ -493,7 +493,10 @@
     datasets.forEach(dataset => {
       if (dataset.long_name === name) {
         dataset.removeDataset()
-        datasets.pop(dataset)
+        let index = array.indexOf(dataset);
+        if (index > -1) {
+          array.splice(index, 1);
+        }
       } 
     });
     document.getElementById(name).remove()
