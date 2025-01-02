@@ -369,7 +369,10 @@
 
     get_time_since() {
       let sense_time = this.get_value_by_name('time')
-      return Math.round(((new Date() / 1000) - sense_time) / 60)
+      let d = new Date()
+      let s = (d / 1000)
+      let diff = (s - sense_time)
+      return Math.round(diff / 60)
     }
 
     make_tr() {
