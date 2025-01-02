@@ -158,18 +158,6 @@ class Database:
     def fetch_names(self):
         """Returns the column names for the Data table."""
         return self.column_names
-    
-    def fetch_most_recent_values(self, serial_number):
-        """Return the most recent values for each hive_number belonging to the given serial_number."""
-        hive_numbers = self.fetch_hive_numbers(serial_number)
-        most_recent_values = []
-        cursor = self.connection.cursor()
-        for hive_number in hive_numbers:
-            cursor.execute("""SELECT * FROM Data ORDER BY time DESC LIMIT 1 WHERE serial_number = ? and hive_number = ?""", (serial_number, hive_number))
-            values = cursor.fetchone()
-            if values is not None:
-                most_recent_values.append({'hive_number': hive_number, 'values':values})
-        return most_recent_values
 
     def fetch_most_recent_values(self, serial_number):
         """Return the most recent values for each hive_number belonging to the given serial_number."""
@@ -177,7 +165,7 @@ class Database:
         most_recent_values = []
         cursor = self.connection.cursor()
         for hive_number in hive_numbers:
-            cursor.execute("""SELECT * FROM Data ORDER BY time DESC LIMIT 1 WHERE serial_number = ? and hive_number = ?""", (serial_number, hive_number))
+            cursor.execute("""SELECT * FROM Data WHERE serial_number = ? and hive_number = ? ORDER BY time DESC LIMIT 1""", (serial_number, hive_number))
             values = cursor.fetchone()
             if values is not None:
                 most_recent_values.append({'hive_number': hive_number, 'values':values})
