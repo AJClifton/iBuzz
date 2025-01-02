@@ -49,7 +49,7 @@ class LoginDatabase:
                                     sign TEXT,
                                     value NUMERIC,
                                     PRIMARY KEY(notification_id)
-                                ):""")
+                                );""")
 
     def close(self):
         """Close database connection."""
