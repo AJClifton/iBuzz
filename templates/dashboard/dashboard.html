@@ -415,7 +415,7 @@
     div.setAttribute('class', 'dropdown')
     div.setAttribute('id', long_name)
     div.innerHTML = `
-        <button class="btn btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+        <button class="btn btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" style="background-color: ` + defaultColour + `">
               `+ long_name_printable + `
             </button>
             <ul class="dropdown-menu" style="">
@@ -529,7 +529,6 @@
       add_sensor_option_dropdown(name, serial_number, hive_number)
     }
     let li = document.createElement("li")
-    button.style.backgroundColor = defaultColour
     li.appendChild(button)
     document.getElementById("sensor_add_dropdown_" + serial_number + "_" + hive_number).appendChild(li)
   }
