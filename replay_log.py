@@ -11,8 +11,10 @@ class ReplayLog:
         """Write a string to a log with the given name.
         
         :param str log_name: Name of the log file that will be written to. Doesn't need to end in '.txt'."""
+        print("add_to_log called ")
         try:
-            path = self.replay_log_folder + ("" if self.replay_log_folder.endswith("/") else "/") + log_name + ("" if self.log_name.endswith(".txt") else ".txt")
+            path = self.replay_log_folder + ("" if self.replay_log_folder.endswith("/") else "/") + str(log_name) + ("" if self.log_name.endswith(".txt") else ".txt")
+            print(path)
             with open(path, "a+") as log:
                 log.write(text)
         except Exception as e:
