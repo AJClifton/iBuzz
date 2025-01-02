@@ -339,14 +339,12 @@
     constructor(values, names) {
       this.values = values
       this.names = names
-      console.log(values, names);
 
       [this.values[3], this.values[4]] = [this.values[4], this.values[3]];
       [this.values[1], this.values[3]] = [this.values[3], this.values[1]];
       [this.values[2], this.values[4]] = [this.values[4], this.values[2]];
 
       let time_since = Math.round(((new Date() / 1000) - this.values[2]) / 60)
-      console.log("time_since", time_since);
       this.values[2] = time_since;
 
     }
@@ -630,7 +628,6 @@
 
   function add_recent_value_widgets(serial_numbers) {
     fetch('/names').then(r => r.json()).then(j => j['names']).then(names => {
-      console.log(names)
       let thead = document.createElement("thead")
       let tr = document.createElement("tr")
       tr.setAttribute("data-sort-method", "None")
@@ -647,11 +644,9 @@
       document.getElementById("recent_values_table").appendChild(thead)
 
       serial_numbers.forEach(serial_number => {
-        console.log(names, serial_number)
         fetch('/recent_values/' + serial_number).then(r => r.json()).then(j => j['recent_values']).then(recent_values => {
           let tbody = document.createElement("tbody")
           for (const [hive_number, values] of Object.entries(recent_values)) {
-            console.log(values, names)
             let r = new RecentValues(values, names)
             tbody.appendChild(r.make_tr())
           }
