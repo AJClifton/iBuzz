@@ -14,7 +14,7 @@ class Database:
     database_lock = threading.Lock()
 
     column_names = ['serial_number', 'outside_humidity', 'outside_temperature', 'time', 'hive_number',
-                    'temperature_1', 'temperature_2', 'temperature_3', 'humidity', 'accelerometer', 'bees_out', 'bees_in', 'weight', 'frequency']
+                    'temperature_1', 'temperature_2', 'temperature_3', 'humidity', 'weight', 'accelerometer', 'bees_out', 'bees_in', 'frequency']
 
     def __init__(self, database_path="database.db"):
         """Manage a database used for storing sensor data.
@@ -40,11 +40,10 @@ class Database:
                                     temperature_2  NUMERIC,
                                     temperature_3  NUMERIC,
                                     humidity NUMERIC,
+                                    weight NUMERIC,
                                     accelerometer   NUMERIC,
-                                    scale NUMERIC,
                                     bees_out INTEGER,
                                     bees_in INTEGER,
-                                    weight  NUMERIC,
                                     frequency NUMERIC,
                                     PRIMARY KEY(serial_number, hive_number, time)
                                 );""")
