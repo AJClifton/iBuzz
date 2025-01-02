@@ -490,15 +490,12 @@
 
 
   function remove_dataset(name) {
-    datasets.forEach(dataset => {
-      if (dataset.long_name === name) {
-        dataset.removeDataset()
-        let index = array.indexOf(dataset);
-        if (index > -1) {
-          array.splice(index, 1);
-        }
+    for (let i = 0; i < datasets.length; i++) {
+      if (datasets[i].long_name === name) {
+        datasets[i].removeDataset()
+        array.splice(i, 1);
       } 
-    });
+    }
     document.getElementById(name).remove()
     myChart.update()
   }
