@@ -15,7 +15,7 @@ db = database.Database()
 login_db = login_database.LoginDatabase()
 login_manager = flask_login.LoginManager(app)
 login_manager.login_view = "login"
-notification = notifications.Notifications(config["notifications_email"], config["notifications_email_password"])
+notification = notifications.Notifications(config["notifications_email"], config["notifications_email_password"], login_db)
 
 
 @app.route('/', methods=['GET'])
@@ -27,7 +27,7 @@ def redirect_user():
 def receive_json():
     json = flask.request.json
     print(json)
-    db.data_received(json)
+    db.data_received(json, notification.evaluate)
     return '', 200
 
 
@@ -63,11 +63,12 @@ def signup_post():
     print(email)
     if login_db.fetch_user_by_email(email) is not None:
         return flask.abort(400)
+    name = flask.request.form.get('name')
     password = flask.request.form.get('password')
     password_repeat = flask.request.form.get('password_repeat')
     if password != password_repeat:
         return flask.abort(400)
-    login_db.add_user("NameHere", email, password)
+    login_db.add_user(name, email, password)
     return flask.redirect('/login')
 
 
@@ -190,6 +191,8 @@ def add_notification(path):
         login_db.add_notification(flask_login.current_user.id, serial_number, hive_number, sensor, sign, value)
     except PermissionError:
         return '', 403
+    except ValueError:
+        return '', 400
     return '', 200
 
 
@@ -206,5 +209,5 @@ def remove_notification(path):
 @app.route('/notifications')
 @flask_login.login_required
 def fetch_notifications():
-    return login_db.fetch_notifications(user_id=flask_login.current_user.id)
+    return {'notifications': login_db.fetch_notifications(user_id=flask_login.current_user.id)}
 

@@ -49,9 +49,11 @@ class Database:
                                 );""")
         self.replay_log = ReplayLog()
 
-    def data_received(self, json):
-        """Run :func:'~database.Database._process_data' as a thread."""
-        thread = threading.Thread(target=self._process_data, args=[json])
+    def data_received(self, json, notification_method=None):
+        """Run :func:'~database.Database._process_data' as a thread.
+        
+        :param notification_method: method that will be called after each hive is processed for notifications. Will be passed current_weather_station_data, current_hive_data, previous_weather_station_data, previous_hive_data."""
+        thread = threading.Thread(target=self._process_data, args=[json, notification_method])
         thread.start()
 
     def _compare_and_add_hive(self, hives, new_hive):
@@ -72,7 +74,7 @@ class Database:
             hives.remove(hive_to_remove)
         return hives
 
-    def _process_data(self, json):
+    def _process_data(self, json, notification_method):
         """Extract and store the data values in the JSON from the Hawk."""
         try:
             serial_number = json["SerNo"]
@@ -117,8 +119,15 @@ class Database:
                         except Exception as e:
                             error_logger.log_error(e)
 
+        if notification_method is not None:
+            all_previous_values = self.fetch_most_recent_values(serial_number)
         with self.connection:
             for hive in hives:
+                if notification_method is not None:
+                    previous_values = all_previous_values[hive.hive_number]
+                    previous_weather_station_data = WeatherStationData(serial_number, previous_values[1], previous_values[2])
+                    previous_hive_data = WeatherStationData(previous_values[4], previous_values[5], previous_values[6], previous_values[7], previous_values[8], previous_values[9], previous_values[10], previous_values[11], previous_values[12], previous_values[13])
+                    notification_method(weather_station, hive, previous_weather_station_data, previous_hive_data)
                 self.connection.execute(
                     "INSERT INTO Data VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
                     (*weather_station.get_data(), *hive.get_data()))
@@ -150,6 +159,18 @@ class Database:
         """Returns the column names for the Data table."""
         return self.column_names
     
+    def fetch_most_recent_values(self, serial_number):
+        """Return the most recent values for each hive_number belonging to the given serial_number."""
+        hive_numbers = self.fetch_hive_numbers(serial_number)
+        most_recent_values = []
+        cursor = self.connection.cursor()
+        for hive_number in hive_numbers:
+            cursor.execute("""SELECT * FROM Data ORDER BY time DESC LIMIT 1 WHERE serial_number = ? and hive_number = ?""", (serial_number, hive_number))
+            values = cursor.fetchone()
+            if values is not None:
+                most_recent_values.append({'hive_number': hive_number, 'values':values})
+        return most_recent_values
+
     def fetch_most_recent_values(self, serial_number):
         """Return the most recent values for each hive_number belonging to the given serial_number."""
         hive_numbers = self.fetch_hive_numbers(serial_number)

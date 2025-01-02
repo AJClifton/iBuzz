@@ -207,13 +207,16 @@ class LoginDatabase:
     def add_notification(self, user_id, serial_number, hive_number, sensor, sign, value):
         """Add a notification to the database.
         
-        :raises PermissionError: if user_id isn't the owner of the hawk 'serial_number'"""
+        :raises PermissionError: if user_id isn't the owner of the hawk 'serial_number'
+        :raises ValueError: if sign isn't '>' or '<'"""
         if not self.check_hawk_ownership(user_id, serial_number):
             raise PermissionError
         try:
+            if not (sign == ">" or sign == "<"):
+                return ValueError
             with self.connection:
                 self.connection.execute("""INSERT INTO Notifications VALUES (?, ?, ?, ?, ?, ?, ?)""",
-                                        (uuid.uuid4(), user_id, serial_number, hive_number, sensor, sign, value))
+                                        (uuid.uuid4(), user_id, serial_number, hive_number, sensor, sign, float(value)))
         except sqlite3.IntegrityError:
             # Only occurs if the uuid4 isn't unique. Reattempting should fix this.
             self.add_notification(user_id, serial_number, hive_number, sensor, sign, value)
@@ -253,3 +256,9 @@ class LoginDatabase:
             return cursor.fetchall()
         else:
             raise ValueError
+        
+    def fetch_hawk_owner(self, serial_number):
+        """Return the user object for the user than owns the hawk with the given serial_number."""
+        cursor = self.connection.cursor()
+        cursor.execute("""SELECT user_id FROM HawkOwnership WHERE serial_number = ?""", (serial_number, ))
+        return self.fetch_user(cursor.fetchone()[0])

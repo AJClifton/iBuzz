@@ -36,9 +36,6 @@ class WeatherStationData:
         self.outside_humidity = outside_humidity
         self.outside_temperature = outside_temperature
 
-    def set_serial_number(self, serial_number):
-        self.serial_number = serial_number
-
     def get_data(self):
         return (self.serial_number, self.outside_humidity, self.outside_temperature)
 
