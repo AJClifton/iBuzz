@@ -30,6 +30,8 @@ class Notifications:
         for notification in notifications:
             hive_number, sensor, sign, value = notification[3], notification[4], notification[5], notification[6]
             # There may be a better way to do this... perhaps this should be in the HiveData classes.
+            current_sensor_value = None
+            previous_sensor_value = None
             if hive_number == None:
                 if sensor == "outside_temperature":
                     current_sensor_value = current_weather_station_data.outside_temperature
