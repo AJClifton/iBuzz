@@ -344,8 +344,8 @@
       let time_index = this.names.indexOf("time")
       let time_since = this.get_time_since()
       console.log("time_since", time_since)
-      this.values.splice(time_index, 1, time_since)
-      this.names.splice(time_index, 1, "Minutes Since Last Update")
+      this.values[time_index] = time_since
+      this.names[time_index] = "Minutes Since Last Update"
 
       console.log(values,names);
       
