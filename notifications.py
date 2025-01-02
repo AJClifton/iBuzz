@@ -29,6 +29,7 @@ class Notifications:
         user = self.login_db.fetch_hawk_owner(serial_number)
         for notification in notifications:
             hive_number, sensor, sign, value = notification[3], notification[4], notification[5], notification[6]
+            print(hive_number, sensor, sign, value)
             # There may be a better way to do this... perhaps this should be in the HiveData classes.
             current_sensor_value = None
             previous_sensor_value = None
