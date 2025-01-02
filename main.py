@@ -186,7 +186,11 @@ def remove_hawk_visibility(path):
 @app.route('/add_notification/<path:path>')
 @flask_login.login_required
 def add_notification(path):
-    serial_number, hive_number, sensor, sign, value, *other = path.split('/')
+    try:
+        serial_number, hive_number, sensor, sign, value, *other = path.split('/')
+    except ValueError:
+        serial_number, sensor, sign, value, *other = path.split('/')
+        hive_number = None
     try:
         login_db.add_notification(flask_login.current_user.id, serial_number, hive_number, sensor, sign, value)
     except PermissionError:
