@@ -339,11 +339,15 @@
     constructor(values, names) {
       this.values = values
       this.names = names
+      console.log(values, names)
+      console.log(new Date / 1000)
       console.log(this.get_time_since());
 
       let time_index = this.names.indexOf("time")
       this.values.splice(time_index, 1, this.get_time_since())
       this.names.splice(time_index, 1, "Minutes Since Last Update")
+
+      console.log(values,names)
       
       [this.names[3], this.names[4]] = [this.names[4], this.names[3]];
       [this.names[1], this.names[3]] = [this.names[3], this.names[1]];
