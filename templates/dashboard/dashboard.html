@@ -600,11 +600,11 @@
 
 
   function add_recent_value_widgets(serial_numbers) {
-    fetch('/names').then(r => r.json()['names']).then(names => {
+    fetch('/names').then(r => r.json()).then(j => j['names']).then(names => {
       console.log(names)
       serial_numbers.forEach(serial_number => {
         console.log(names, serial_number)
-        fetch('/recent_values/' + serial_number).then(r => r.json()['recent_values']).then(recent_values => {
+        fetch('/recent_values/' + serial_number).then(r => r.json()).then(j => j['recent_values']).then(recent_values => {
           for (const [hive_number, values] of Object.entries(recent_values)) {
             console.log(values, names)
             let r = RecentValues(values, names)
