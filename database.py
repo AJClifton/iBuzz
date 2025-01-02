@@ -124,7 +124,7 @@ class Database:
         with self.connection:
             for hive in hives:
                 if notification_method is not None:
-                    previous_values = all_previous_values[hive.hive_number]
+                    previous_values = all_previous_values[str(hive.hive_number)]
                     previous_weather_station_data = WeatherStationData(serial_number, previous_values[1], previous_values[2])
                     previous_hive_data = WeatherStationData(previous_values[4], previous_values[5], previous_values[6], previous_values[7], previous_values[8], previous_values[9], previous_values[10], previous_values[11], previous_values[12], previous_values[13])
                     notification_method(weather_station, hive, previous_weather_station_data, previous_hive_data)
@@ -162,13 +162,13 @@ class Database:
     def fetch_most_recent_values(self, serial_number):
         """Return the most recent values for each hive_number belonging to the given serial_number."""
         hive_numbers = self.fetch_hive_numbers(serial_number)
-        most_recent_values = []
+        most_recent_values = {}
         cursor = self.connection.cursor()
         for hive_number in hive_numbers:
             cursor.execute("""SELECT * FROM Data WHERE serial_number = ? and hive_number = ? ORDER BY time DESC LIMIT 1""", (serial_number, hive_number))
             values = cursor.fetchone()
             if values is not None:
-                most_recent_values.append({'hive_number': hive_number, 'values':values})
+                most_recent_values[str(hive_number)] = values
         return most_recent_values
 
     def fetch_hive_numbers(self, serial_number):
