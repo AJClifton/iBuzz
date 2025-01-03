@@ -42,6 +42,7 @@
     <div class="mb-3">
       <label for="exampleSelect" class="form-label">Hive Number</label>
       <select class="form-select" id="notification_hive_number">
+        <option selected="selected" value="">Select serial_number first</option>
       </select>
     </div>
     <fieldset class="mb-3">
@@ -155,7 +156,7 @@
   function add_hive_number_options(serial_number) {
     fetch_hive_numbers(serial_number).then(hive_numbers => {
       let parent = document.getElementById("notification_hive_number")
-      parent.innerHTML = ""
+      parent.length = 1
       hive_numbers.forEach(hive_number => {
         let option = document.createElement("option")
         option.setAttribute("value", hive_number)
