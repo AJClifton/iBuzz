@@ -233,7 +233,9 @@
         </div>
       </div>
 
-      <canvas class="my-4 w-100" id="myChart" width="900" height="380"></canvas>
+      <div class="table-responsive">
+        <canvas class="my-4 w-100" id="myChart" width="900" height="380"></canvas>
+      </div>
 
       <table id="recent_values_table"></table>    
 
@@ -377,6 +379,8 @@
     myChart = new Chart(ctx, {
       type: 'line',
       options: {
+        responsive: false,
+        maintainAspectRatio: false,
         plugins: {
           zoom: {
             pan: {
