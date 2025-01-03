@@ -452,7 +452,7 @@
             .then(r => r.json())
             .then(json => {
               json['names'].forEach((name) => {
-                if (name != "serial_number" && name != "time") {
+                if (name != "serial_number" && name != "time" && name != "hive_number") {
                   add_sensor_option(name, serial_number, hive_number)
                 }
               })
