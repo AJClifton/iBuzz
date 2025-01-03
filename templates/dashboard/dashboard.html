@@ -261,6 +261,7 @@
   const ctx = document.getElementById('myChart')
   let myChart = new Chart(ctx, {options: {plugins: {zoom: {}}}})
   let datasets = []
+  let table = null
 
   const aboveValue = (ctx, value, return_value, default_value) => ctx.p1.parsed.y > value || ctx.p0.parsed.y > value ? return_value : default_value
   const belowValue = (ctx, value, return_value, default_value) => ctx.p1.parsed.y < value || ctx.p0.parsed.y < value ? return_value : default_value
@@ -429,6 +430,11 @@
         myChart.update('none')
       })
     }
+    fetch_hawk_serial_numbers().then(serial_numbers => {
+      table.destroy()
+      document.getElementById("recent_values_table").innerHTML = ""
+      add_recent_value_widgets(serial_numbers)
+    })
   }
 
   /* Fetch data for a sensor for a given serial_number and hive_number */
@@ -645,7 +651,7 @@
           }
           document.getElementById("recent_values_table").appendChild(tbody)
         }).then((r) => {
-          let table = new DataTable('#recent_values_table')
+          table = new DataTable('#recent_values_table')
         })
       })
     })
