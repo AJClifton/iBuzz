@@ -103,16 +103,13 @@ def send_template(path):
 
 
 @app.route('/data/<path:path>', methods=['GET'])
+@flask_login.login_required
 def fetch_data(path):
     try:
-        serial_number, field, *start_time = path.split("/")
-        # Check a user is logged in, and if the user has permission to view this data
-        if isinstance(flask_login.current_user, flask_login.AnonymousUserMixin):
+        serial_number, hive_number, field, *start_time = path.split("/")
+        if not login_db.check_visibility_permissions(flask_login.current_user.id, serial_number):
             return '', 400
-        else:
-            if not login_db.check_visibility_permissions(flask_login.current_user.id, serial_number):
-                return '', 400
-        return db.fetch_field(serial_number, field, (0 if len(start_time) == 0 else start_time[0]))
+        return db.fetch_field(serial_number, hive_number, field, (0 if len(start_time) == 0 else start_time[0]))
     except KeyError as e:
         error_logger.log_error(e)
         return {}

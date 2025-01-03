@@ -421,15 +421,10 @@
   /* Fetch data for all existing datasets starting from the time of the most recent value */
   async function fetch_updated_data() {
     for (let i = 0; i < datasets.length; i++) {
-      let existing_dataset = fetched_data[datasets[i]]
-      fetch("/data/" + datasets[i] + "/" + existing_dataset[existing_dataset.length - 1]['t']/1000).then((r) => r.json()).then((json) => {
+      let existing_dataset = datasets[i].data
+      fetch("/data/" + datasets[i].serial_number + "/" + datasets[i].hive_number + "/" + datasets[i].sensor + "/" + existing_dataset[existing_dataset.length - 1]['t']/1000).then((r) => r.json()).then((json) => {
         console.log(json)
-        let times = json['time']
-        let data = json[datasets[i]]
-        for (let k = 0; k < times.length; k++) {
-          let d = {t: times[k] * 1000, y: data[k]}
-          existing_dataset.push(d)
-        }
+        datasets[i].addData(json)
       }).then(() => {
         myChart.update('none')
       })
