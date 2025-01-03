@@ -24,7 +24,6 @@ class Notifications:
         """Check if any of the current data given meet the requirements for a notification and the previous values don't and send a notification if this is the case."""
         serial_number = current_weather_station_data.serial_number
         notifications = self.login_db.fetch_notifications(serial_number=serial_number)
-        print(len(notifications), notifications)
         if len(notifications) == 0:
             return
         for notification in notifications:
@@ -34,7 +33,6 @@ class Notifications:
                 self.login_db.remove_notification(notification[1], notification[0])
                 continue
             hive_number, sensor, sign, value = notification[3], notification[4], notification[5], notification[6]
-            print(hive_number, sensor, sign, value)
             # There may be a better way to do this... perhaps this should be in the HiveData classes.
             if sensor == "outside_temperature":
                 current_sensor_value = current_weather_station_data.outside_temperature
