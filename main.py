@@ -86,7 +86,7 @@ def dashboard():
 
 
 @app.route('/settings', methods=['GET'])
-#@flask_login.login_required
+@flask_login.login_required
 def settings():
     return flask.render_template('settings/settings.html')
 
