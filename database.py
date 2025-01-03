@@ -190,5 +190,7 @@ class Database:
         cursor.execute("""SELECT * FROM Data WHERE serial_number = ?""", (serial_number,))
         text = ""
         for line in cursor.fetchall():
-            text += ",".join(line)
+            for part in line[:-1]:
+                text += str(part) + ","
+            text += str(line[-1]) + "\n"
         return text
