@@ -130,6 +130,9 @@ class Database:
                 notification_method_arguments.append((weather_station, hive, previous_weather_station_data, previous_hive_data))
         with self.connection:
             for hive in hives:
+                print("constraint values ", (weather_station.serial_number, hive.hive_number, hive.time))
+                r = self.connection.execute("""SELECT * FROM Data WHERE serial_number = ? and hive_number = ? and time = ?""", (weather_station.serial_number, hive.hive_number, hive.time))
+                print(r.fetchall())
                 self.connection.execute(
                     "INSERT INTO Data VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
                     (*weather_station.get_data(), *hive.get_data()))
