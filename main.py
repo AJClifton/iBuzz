@@ -91,6 +91,12 @@ def settings():
     return flask.render_template('settings/settings.html')
 
 
+@app.route('/export', methods=['GET'])
+@flask_login.login_required
+def export():
+    return flask.render_template('export/export.html')
+
+
 @app.route('/templates/<path:path>')
 def send_template(path):
     return flask.send_from_directory('templates', path)
