@@ -129,6 +129,7 @@ class Database:
                 previous_hive_data = HiveData(previous_values[4], previous_values[5], previous_values[6], previous_values[7], previous_values[8], previous_values[9], previous_values[10], previous_values[11], previous_values[12], previous_values[13])
                 notification_method_arguments.append((weather_station, hive, previous_weather_station_data, previous_hive_data))
         with self.connection:
+            print(hives)
             for hive in hives:
                 print("constraint values ", (weather_station.serial_number, hive.hive_number, hive.time))
                 r = self.connection.execute("""SELECT * FROM Data WHERE serial_number = ? and hive_number = ? and time = ?""", (weather_station.serial_number, hive.hive_number, hive.time))
