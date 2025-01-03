@@ -20,6 +20,10 @@ class HiveData:
     def is_more_recent_version_of(self, other_hive):
         """Return True if the main HiveData has the same hive_number and a more recent time than other_hive."""
         return self.time > other_hive.time and self.hive_number == other_hive.hive_number
+    
+    def is_more_recent_or_equal_to(self, other_hive):
+        """Return True if the main HiveData has the same hive_number and a more recent or identical time to other_hive."""
+        return self.time >= other_hive.time and self.hive_number == other_hive.hive_number
 
 
     def get_data(self):

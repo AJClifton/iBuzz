@@ -64,7 +64,7 @@ class Database:
         older_version = False
         to_remove = []
         for hive in hives:
-            if hive.is_more_recent_version_of(new_hive):
+            if hive.is_more_recent_or_equal_to(new_hive):
                 older_version = True
             if new_hive.is_more_recent_version_of(hive):
                 to_remove.append(hive)
