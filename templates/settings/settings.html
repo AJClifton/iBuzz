@@ -30,6 +30,40 @@
     </a>
   </header>
 
+  <h5>Register a New Hawk</h5>
+  <div class="mb-3">
+    <label class="form-label">Enter the serial number provided by Digital Matter</label>
+    <input type="text" step="1" class="form-control" id="register_hawk_id">
+    <button class="btn btn-primary" onclick="register_hawk()">Submit Serial Number</button>
+  </div>
+
+  <h5>Your Owned Hawks</h5>
+  <ul class="list-group" id="owned_list"></ul>
+
+  
+  <div style="padding: 30px;"></div>
+
+
+  <h5>Add visibility permissions</h5>
+  <div class="mb-3">
+    <label for="exampleSelect" class="form-label">Serial Number</label>
+    <select class="form-select" id="permission_serial_number">
+      <option selected="selected" value="">Serial Number</option>
+    </select>
+  </div>
+  <div class="mb-3">
+    <label class="form-label">Enter a specific user's email, or 'ALL' (case sensitive) for global access.</label>
+    <input type="text" step="1" class="form-control" id="permission_recipient">
+    <button class="btn btn-primary" onclick="grant_permission()">Grant Permission</button>
+  </div>
+
+  <h5>Granted Permissions</h5>
+  <ul class="list-group" id="permission_list"></ul>
+
+  
+  <div style="padding: 30px;"></div>
+
+
   <h5>Add Notification</h5>
 
     <div class="mb-3">
@@ -82,6 +116,7 @@
     list_notifications()
     add_notification_serial_number_options()
     add_notification_sensor_options()
+    run_all_owned_hawk_methods()
   }
 
   function fetch_notifications() {
@@ -212,6 +247,218 @@
 
     console.log('/add_notification/' + serial_number + "/" + hive_number + "/" + sensor + "/" + sign + "/" + value)
     fetch('/add_notification/' + serial_number + "/" + hive_number + "/" + sensor + "/" + sign + "/" + value).then(r => refresh_notifications_list())
+  }
+
+  function register_hawk() {
+    let serial_number_input = document.getElementById("register_hawk_id")
+    fetch('register/' + serial_number_input.value).then(r => {
+      console.log(r)
+      serial_number_input.value = ""
+      refresh_owned_hawk_list()
+      refresh_permission_serial_number_options()
+    })
+  }
+
+  function fetch_owned_serial_numbers() {
+    return fetch('/owned_serial_numbers').then(r => r.json()).then(j => j['owned_serial_numbers'])
+  }
+
+  function deregister_hawk(serial_number) {
+    fetch('/deregister/' + serial_number)
+  }
+
+  function owned_hawk_li(serial_number) {
+    let li = document.createElement("li")
+    li.setAttribute("class", "alert-dismissible fade show list-group-item")
+    li.setAttribute("aria-disabled", "true")
+    li.innerText = "Serial Number: " + serial_number
+    let button = document.createElement("button")
+    button.setAttribute("type", "button")
+    button.setAttribute("class", "btn-close")
+    button.setAttribute("data-bs-dismiss", "alert")
+    button.setAttribute("aria-label", "Close")
+    button.addEventListener("click", function() {
+      li.setAttribute("class", li.getAttribute("class") + " disabled")
+      deregister_hawk(serial_number)
+      refresh_owned_hawk_list()
+    }, false)
+    li.appendChild(button)
+    return li
+  }
+
+  function no_owned_li() {
+    let li = document.createElement("li")
+    li.setAttribute("class", "alert-dismissible fade show list-group-item")
+    li.setAttribute("aria-disabled", "true")
+    li.innerText = "Register your first Hawk above."
+    return li
+  }
+
+  function list_owned_hawks() {
+    fetch_owned_serial_numbers().then(serial_numbers => {
+      let parent = document.getElementById("owned_list")
+      if (serial_numbers.length === 0) {
+        let li = no_owned_li()
+        parent.appendChild(li)
+      }
+      else {
+        serial_numbers.forEach(serial_number => {
+          console.log(serial_number)
+          let li = owned_hawk_li(serial_number)
+          parent.appendChild(li)
+        });
+      }
+    })
+  }
+
+  function list_owned_hawks_prefetched(serial_numbers) {
+    let parent = document.getElementById("owned_list")
+    if (serial_numbers.length === 0) {
+      let li = no_owned_li()
+      parent.appendChild(li)
+    }
+    else {
+      serial_numbers.forEach(serial_number => {
+        console.log(serial_number)
+        let li = owned_hawk_li(serial_number)
+        parent.appendChild(li)
+      });
+    }
+  }
+
+  function refresh_owned_hawk_list() {
+    let parent = document.getElementById("owned_list")
+    parent.innerHTML = ""
+    list_owned_hawks()
+  }
+
+  function grant_permission() {
+    let serial_number = document.getElementById("permission_serial_number").value
+    let recipient_input = document.getElementById("permission_recipient")
+    fetch('add_visibility/' + serial_number + "/" + recipient_input.value).then(r => {
+      console.log(r)
+      recipient_input.value = ""
+      refresh_permission_list()
+    })
+  }
+
+  function add_permission_serial_number_options() {
+    fetch_owned_serial_numbers().then(serial_numbers => {
+      let parent = document.getElementById("permission_serial_number")
+      serial_numbers.forEach(serial_number => {
+        let option = document.createElement("option")
+        option.setAttribute("value", serial_number[0])
+        option.innerText = serial_number[0]
+        parent.appendChild(option)
+      });
+    })
+  }
+
+  function add_permission_serial_number_options_prefetched(serial_numbers) {
+    let parent = document.getElementById("permission_serial_number")
+    serial_numbers.forEach(serial_number => {
+      let option = document.createElement("option")
+      option.setAttribute("value", serial_number[0])
+      option.innerText = serial_number[0]
+      parent.appendChild(option)
+    });
+  }
+
+  
+  function refresh_permission_serial_number_options() {
+    let parent = document.getElementById("permission_serial_number")
+    parent.length = 1
+    add_permission_serial_number_options()
+  }
+
+  function fetch_visibility_permissions(serial_number) {
+    return fetch('/visibility/' + serial_number).then(r => r.json()).then(j => j['visibility'])
+  }
+
+  function remove_permission(serial_number, user_id) {
+    fetch('/remove_visibility/' + serial_number + "/" + user_id)
+  }
+
+  function visibility_permission_li(serial_number, user_id, email) {
+    let li = document.createElement("li")
+    li.setAttribute("class", "alert-dismissible fade show list-group-item")
+    li.setAttribute("aria-disabled", "true")
+    li.innerText = "Serial Number: " + serial_number + ", User: " + ((user_id === "ALL") ? user_id : email)
+    let button = document.createElement("button")
+    button.setAttribute("type", "button")
+    button.setAttribute("class", "btn-close")
+    button.setAttribute("data-bs-dismiss", "alert")
+    button.setAttribute("aria-label", "Close")
+    button.addEventListener("click", function() {
+      li.setAttribute("class", li.getAttribute("class") + " disabled")
+      remove_permission(serial_number, user_id)
+      refresh_permission_list()
+    }, false)
+    li.appendChild(button)
+    return li
+  }
+
+  function no_permission_li() {
+    let li = document.createElement("li")
+    li.setAttribute("class", "alert-dismissible fade show list-group-item")
+    li.setAttribute("aria-disabled", "true")
+    li.innerText = "No active permission granted. Grant some above."
+    return li
+  }
+
+  function list_visibility_permission() {
+    fetch_owned_serial_numbers().then(serial_numbers => {
+      serial_numbers.forEach(serial_number => {
+        fetch_visibility_permissions(serial_number).then(permissions => {
+          let parent = document.getElementById("permission_list")
+          if (permissions.length === 0) {
+            let li = no_owned_li()
+            parent.appendChild(li)
+          }
+          else {
+            permissions.forEach(permission => {
+              console.log(permission)
+              let li = visibility_permission_li(permission[0], permission[1], permission[2])
+              parent.appendChild(li)
+            });
+          }
+        })
+      })
+    })
+  }
+
+  function list_visibility_permission_prefetched(serial_numbers) {
+    serial_numbers.forEach(serial_number => {
+      fetch_visibility_permissions(serial_number).then(permissions => {
+        let parent = document.getElementById("permission_list")
+        if (permissions.length === 0) {
+          let li = no_permission_li()
+          parent.appendChild(li)
+        }
+        else {
+          permissions.forEach(permission => {
+            console.log(permission)
+            let li = visibility_permission_li(permission[0], permission[1], permission[2])
+            parent.appendChild(li)
+          });
+        }
+      })
+    })
+  }
+
+  function refresh_permission_list() {
+    let parent = document.getElementById("permission_list")
+    parent.innerHTML = ""
+    list_visibility_permission()
+  }
+
+
+  function run_all_owned_hawk_methods() {
+    fetch_owned_serial_numbers().then(serial_numbers => {
+      list_visibility_permission_prefetched(serial_numbers)
+      add_permission_serial_number_options_prefetched(serial_numbers)
+      list_owned_hawks_prefetched(serial_numbers)
+    })
   }
 
 </script>

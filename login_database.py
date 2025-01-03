@@ -198,6 +198,17 @@ class LoginDatabase:
             (user_id, serial_number, 'ALL'))
         return cursor.fetchone() is not None
     
+    def fetch_all_visibility_permissions(self, user_id, serial_number):
+        """Return all visibility permissions for the given serial_number with emails and user_ids.
+        
+        :raises PermissionError: if user_id doesn't own the hawk with the given serial_number"""
+        if not self.check_hawk_ownership(user_id, serial_number):
+            raise PermissionError
+        cursor = self.connection.cursor()
+        cursor.execute("""SELECT serial_number, HawkVisibility.user_id, email FROM HawkVisibility LEFT OUTER JOIN Logins ON HawkVisibility.user_id = Logins.user_id WHERE serial_number = ?""", (serial_number, ))
+        return cursor.fetchall()
+
+    
     def fetch_owned_serial_numbers(self, user_id):
         """Return list of serial numbers the given user_id is registered as the owner of."""
         cursor = self.connection.cursor()

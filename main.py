@@ -126,6 +126,7 @@ def fetch_serial_numbers():
 @app.route('/owned_serial_numbers', methods=['GET'])
 @flask_login.login_required
 def fetch_owned_serial_numbers():
+    print("owned: ", flask_login.current_user)
     return {'owned_serial_numbers': login_db.fetch_owned_serial_numbers(flask_login.current_user.id)}
 
 
@@ -167,32 +168,42 @@ def deregister_hawk(path):
     return '', 200
 
 
-@app.route('/addvisibility/<path:path>')
+@app.route('/add_visibility/<path:path>')
 @flask_login.login_required
 def add_hawk_visibility(path):
     try:
-        hawk_id, user_id, *other = path.split('/')
+        serial_number, user_id, *other = path.split('/')
         # if user-id is actually an email, fetch the user_id
         if '@' in user_id:
             user_id = login_db.fetch_user_by_email(user_id).id
-        login_db.add_hawk_visibility(flask_login.current_user.id, hawk_id, user_id)
+        login_db.add_hawk_visibility(flask_login.current_user.id, serial_number, user_id)
     except (ValueError, PermissionError) as e:
         return '', 400
     return '', 200
 
 
-@app.route('/removevisibility/<path:path>')
+@app.route('/remove_visibility/<path:path>')
 @flask_login.login_required
 def remove_hawk_visibility(path):
     try:
-        hawk_id, user_id, *other = path.split('/')
+        serial_number, user_id, *other = path.split('/')
         # if user-id is actually an email, fetch the user_id
         if '@' in user_id:
             user_id = login_db.fetch_user_by_email(user_id).id
-        login_db.remove_hawk_visibility(flask_login.current_user.id, hawk_id, user_id)
+        login_db.remove_hawk_visibility(flask_login.current_user.id, serial_number, user_id)
     except (ValueError, PermissionError) as e:
         return '', 400
     return '', 200
+
+
+@app.route('/visibility/<path:path>')
+@flask_login.login_required
+def fetch_hawk_visibility(path):
+    try:
+        serial_number, *other = path.split('/')
+        return {'visibility': login_db.fetch_all_visibility_permissions(flask_login.current_user.id, serial_number)}
+    except PermissionError as e:
+        return '', 400
 
 
 @app.route('/add_notification/<path:path>')
