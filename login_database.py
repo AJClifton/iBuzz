@@ -193,7 +193,7 @@ class LoginDatabase:
             return True
         cursor = self.connection.cursor()
         cursor.execute(
-            """SELECT * FROM HawkVisibility WHERE (user_id = (?) or user_id = (?)) and serial_number = (?))""",
+            """SELECT * FROM HawkVisibility WHERE (user_id = ? or user_id = ?) and serial_number = ?""",
             (user_id, 'ALL', serial_number))
         return cursor.fetchone() is not None
     
