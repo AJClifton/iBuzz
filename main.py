@@ -85,6 +85,12 @@ def dashboard():
     return flask.render_template('dashboard/dashboard.html')
 
 
+@app.route('/settings', methods=['GET'])
+#@flask_login.login_required
+def settings():
+    return flask.render_template('settings/settings.html')
+
+
 @app.route('/templates/<path:path>')
 def send_template(path):
     return flask.send_from_directory('templates', path)
@@ -115,6 +121,12 @@ def fetch_names():
 @flask_login.login_required
 def fetch_serial_numbers():
     return {'serial_numbers': login_db.fetch_visible_serial_numbers(flask_login.current_user.id)}
+
+
+@app.route('/owned_serial_numbers', methods=['GET'])
+@flask_login.login_required
+def fetch_owned_serial_numbers():
+    return {'owned_serial_numbers': login_db.fetch_owned_serial_numbers(flask_login.current_user.id)}
 
 
 @app.route('/hive_numbers/<path:path>', methods=['GET'])

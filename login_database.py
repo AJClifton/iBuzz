@@ -90,6 +90,12 @@ class LoginDatabase:
                 """INSERT INTO Logins VALUES (?, ?, ?, ?)""",
                 (user_id, first_name, email, hashed_password))
 
+    def change_password(self, user_id, new_password):
+        """Change the password for a given user in the database."""
+        hashed_password = hash_password(new_password)
+        with self.connection:
+            self.connection.execute("""UPDATE Logins SET password = ? WHERE user_id = ?""", (hashed_password, user_id))
+
     def check_unique_user_id(self, user_id):
         """Return False if the uuid exists in the database, True otherwise."""
         cursor = self.connection.cursor()
@@ -191,19 +197,25 @@ class LoginDatabase:
             """SELECT * FROM HawkVisibility WHERE user_id = (?) and (serial_number = (?) or serial_number = (?))""",
             (user_id, serial_number, 'ALL'))
         return cursor.fetchone() is not None
-
+    
+    def fetch_owned_serial_numbers(self, user_id):
+        """Return list of serial numbers the given user_id is registered as the owner of."""
+        cursor = self.connection.cursor()
+        cursor.execute("""SELECT serial_number FROM HawkOwnership WHERE user_id = ?""", (user_id,))
+        return cursor.fetchall()
+    
     def fetch_visible_serial_numbers(self, user_id):
         """Return list of serial numbers the given user_id has permission to see."""
         cursor = self.connection.cursor()
         cursor.execute("""SELECT serial_number FROM HawkVisibility WHERE user_id = ? or user_id = ?""", (user_id, 'ALL'))
         serial_numbers = cursor.fetchall()
-        cursor.execute("""SELECT serial_number FROM HawkOwnership WHERE user_id = ?""", (user_id,))
-        owned_serial_number = cursor.fetchone()
-        if owned_serial_number is not None:
-            if owned_serial_number not in serial_numbers:
-                serial_numbers.insert(0, owned_serial_number[0])
+        owned_serial_numbers = self.fetch_owned_serial_numbers(user_id)
+        if owned_serial_numbers is not None:
+            for owned_serial_number in owned_serial_numbers:
+                if owned_serial_number not in serial_numbers:
+                    serial_numbers.insert(0, owned_serial_number)
         return serial_numbers
-    
+
     def add_notification(self, user_id, serial_number, hive_number, sensor, sign, value):
         """Add a notification to the database.
         
