@@ -121,8 +121,7 @@ class LoginDatabase:
         Removes ownership of a hawk from a user_id and removes all visibility permissions.
         :type user_id: str
         :param int serial_number: Serial Number assigned by Digital Matter to the Hawk
-        :raises PermissionError: if user_id doesn't own the Hawk serial_number
-        :raises ValueError: if serial_number isn't an integer"""
+        :raises PermissionError: if user_id doesn't own the Hawk serial_number"""
         if not self.check_hawk_ownership(user_id, serial_number):
             raise PermissionError
         with self.connection:
@@ -136,7 +135,7 @@ class LoginDatabase:
         :type user_id: str
         :type serial_number: int"""
         cursor = self.connection.cursor()
-        cursor.execute("""SELECT * FROM HawkOwnership WHERE user_id = (?) and serial_number = (?)""", (user_id, serial_number))
+        cursor.execute("""SELECT * FROM HawkOwnership WHERE user_id = (?) and serial_number = (?)""", (user_id, int(serial_number)))
         item = cursor.fetchone()
         return item is not None
 

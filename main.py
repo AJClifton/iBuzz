@@ -126,7 +126,6 @@ def fetch_serial_numbers():
 @app.route('/owned_serial_numbers', methods=['GET'])
 @flask_login.login_required
 def fetch_owned_serial_numbers():
-    print("owned: ", flask_login.current_user)
     return {'owned_serial_numbers': login_db.fetch_owned_serial_numbers(flask_login.current_user.id)}
 
 
@@ -163,7 +162,7 @@ def register_hawk(path):
 def deregister_hawk(path):
     try:
         login_db.deregister_hawk(flask_login.current_user.id, path)
-    except (ValueError, PermissionError) as e:
+    except PermissionError as e:
         return '', 400
     return '', 200
 
