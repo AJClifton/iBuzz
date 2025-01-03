@@ -651,7 +651,7 @@
           }
           document.getElementById("recent_values_table").appendChild(tbody)
         }).then((r) => {
-          table = new DataTable('#recent_values_table')
+          table = new DataTable('#recent_values_table', {scrollX:true}) 
         })
       })
     })
