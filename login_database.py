@@ -217,7 +217,7 @@ class LoginDatabase:
     def fetch_visible_serial_numbers(self, user_id):
         """Return list of serial numbers the given user_id has permission to see."""
         cursor = self.connection.cursor()
-        cursor.execute("""SELECT serial_number FROM HawkVisibility WHERE user_id = ? or user_id = ?""", (user_id, 'ALL'))
+        cursor.execute("""SELECT DISTINCT serial_number FROM HawkVisibility WHERE user_id = ? or user_id = ?""", (user_id, 'ALL'))
         serial_numbers = cursor.fetchall()
         owned_serial_numbers = self.fetch_owned_serial_numbers(user_id)
         if owned_serial_numbers is not None:
