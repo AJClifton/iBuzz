@@ -26,6 +26,7 @@ class Notifications:
         notifications = self.login_db.fetch_notifications(serial_number=serial_number)
         if len(notifications) == 0:
             return
+        print(len(notifications), notifications)
         for notification in notifications:
             user = self.login_db.fetch_user(notification[1])
             # If the user account doesn't exist anymore, delete the notification.
@@ -69,7 +70,7 @@ class Notifications:
                 previous_sensor_value = previous_hive_data.frequency
             else:
                 continue
-            print(hive_number, sensor, sign, value, current_sensor_value, previous_sensor_value, user.email)
+            print(hive_number, sensor, sign, value, current_sensor_value, previous_sensor_value, user.email, sign == ">", current_sensor_value > value, not previous_sensor_value > value, sign == "<", current_sensor_value < value, not previous_sensor_value < value)
             if sign == ">" and current_sensor_value > value and not previous_sensor_value > value:
                     self.send_email_notification(user.email, f"iBuzz ALERT {sensor}", f"{sensor} in hive '{serial_number} - {hive_number}' was detected at {current_sensor_value} which is greater than your threshold of {value}")
                     continue

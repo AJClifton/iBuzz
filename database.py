@@ -183,3 +183,12 @@ class Database:
         for line in cursor.fetchall():
             hive_numbers.append(line[0])
         return hive_numbers
+    
+    def data_to_csv(self, serial_number):
+        """Return the text for a csv file that contains all the data linked to the given serial_number."""
+        cursor = self.connection.cursor()
+        cursor.execute("""SELECT * FROM Data WHERE serial_number = ?""", (serial_number,))
+        text = ""
+        for line in cursor.fetchall():
+            text += ",".join(line)
+        return text

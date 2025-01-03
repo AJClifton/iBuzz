@@ -237,3 +237,20 @@ def remove_notification(path):
 def fetch_notifications():
     return {'notifications': login_db.fetch_notifications(user_id=flask_login.current_user.id)}
 
+
+@app.route('/download_replay/<path:path>')
+@flask_login.login_required
+def download_replay_log(path):
+    if login_db.check_hawk_ownership(flask_login.current_user.id, path):
+        return flask.send_file('replay_logs/' + path + ".txt", as_attachment=True)
+    else:
+        return '', 403
+    
+
+@app.route('/download_data/<path:path>')
+@flask_login.login_required
+def download_data(path):
+    if login_db.check_visibility_permissions(flask_login.current_user.id, path):
+        return db.data_to_csv(path), {"Content-Type": "text/csv"}
+    else:
+        return '', 403
