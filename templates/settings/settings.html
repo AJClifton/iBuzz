@@ -106,6 +106,7 @@
     button.addEventListener("click", function() {
       li.setAttribute("class", li.getAttribute("class") + " disabled")
       delete_notification(notification_id)
+      refresh_notifications_list()
     }, false)
     li.appendChild(button)
     return li
