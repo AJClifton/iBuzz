@@ -268,7 +268,6 @@ class LoginDatabase:
         :param serial_number: Serial Number assigned by Digital Matter to the Hawk
         :param user_id: uuid of the user
         :raises ValueError: if both serial_number and user_id are None"""
-        
         cursor = self.connection.cursor()
         if serial_number is not None:
             cursor.execute("""SELECT * FROM Notifications WHERE serial_number = ?""", (serial_number, ))
