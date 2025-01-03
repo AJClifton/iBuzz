@@ -26,8 +26,8 @@ class Notifications:
         notifications = self.login_db.fetch_notifications(serial_number=serial_number)
         if len(notifications) == 0:
             return
-        user = self.login_db.fetch_hawk_owner(serial_number)
         for notification in notifications:
+            user = self.login_db.fetch_user(notification[1])
             hive_number, sensor, sign, value = notification[3], notification[4], notification[5], notification[6]
             print(hive_number, sensor, sign, value)
             # There may be a better way to do this... perhaps this should be in the HiveData classes.

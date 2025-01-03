@@ -143,17 +143,17 @@
     list_notifications()
   }
 
-  function fetch_owned_serial_numbers() {
-    return fetch('/owned_serial_numbers').then(r => r.json()).then(j => j['owned_serial_numbers'])
+  function fetch_visible_serial_numbers() {
+    return fetch('/serial_numbers').then(r => r.json()).then(j => j['serial_numbers'])
   }
 
   function add_notification_serial_number_options() {
-    fetch_owned_serial_numbers().then(owned_serial_numbers => {
+    fetch_visible_serial_numbers().then(serial_numbers => {
       let parent = document.getElementById("notification_serial_number")
       parent.onchange = function() {
         add_hive_number_options(this.value)
       }
-      owned_serial_numbers.forEach(serial_number => {
+      serial_numbers.forEach(serial_number => {
         let option = document.createElement("option")
         option.setAttribute("value", serial_number[0])
         option.innerText = serial_number[0]

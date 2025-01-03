@@ -219,9 +219,9 @@ class LoginDatabase:
     def add_notification(self, user_id, serial_number, hive_number, sensor, sign, value):
         """Add a notification to the database.
         
-        :raises PermissionError: if user_id isn't the owner of the hawk 'serial_number'
+        :raises PermissionError: if user_id doesn't have permission to view the hawk 'serial_number'
         :raises ValueError: if sign isn't '>' or '<'"""
-        if not self.check_hawk_ownership(user_id, serial_number):
+        if not self.check_visibility_permissions(user_id, serial_number):
             raise PermissionError
         try:
             if not (sign == ">" or sign == "<"):
@@ -274,3 +274,4 @@ class LoginDatabase:
         cursor = self.connection.cursor()
         cursor.execute("""SELECT user_id FROM HawkOwnership WHERE serial_number = ?""", (serial_number, ))
         return self.fetch_user(cursor.fetchone()[0])
+    
