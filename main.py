@@ -20,7 +20,9 @@ notification = notifications.Notifications(config["notifications_email"], config
 
 @app.route('/', methods=['GET'])
 def redirect_user():
-    return flask.redirect('/login')
+    if flask_login.current_user.is_authenticated:
+        return dashboard()
+    return login()
 
 
 @app.route('/', methods=['POST'])
@@ -47,9 +49,12 @@ def login_post():
     password = flask.request.form.get('password')
     remember = flask.request.form.get('remember')
     user = login_db.fetch_user_by_email(email)
-    if login_database.verify_password(user, password):
-        flask_login.login_user(user, remember=bool(remember))
-        return flask.redirect('/dashboard')
+    try:
+        if login_database.verify_password(user, password):
+            flask_login.login_user(user, remember=bool(remember))
+            return flask.redirect('/dashboard')
+    except Exception:
+        return login()
 
 
 @app.route('/signup', methods=['GET'])
@@ -62,12 +67,12 @@ def signup_post():
     email = flask.request.form.get('email')
     print(email)
     if login_db.fetch_user_by_email(email) is not None:
-        return flask.abort(400)
+        return signup()
     name = flask.request.form.get('name')
     password = flask.request.form.get('password')
     password_repeat = flask.request.form.get('password_repeat')
     if password != password_repeat:
-        return flask.abort(400)
+        return signup()
     login_db.add_user(name, email, password)
     return flask.redirect('/login')
 
