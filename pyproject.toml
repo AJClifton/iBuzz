@@ -1,12 +1,7 @@
 [project]
-name = "mypackage"
+name = "ibuzz"
 version = "0.0.1"
-dependencies = [
-    "werkzeug.security",
-    "yaml",
-    "flask",
-    "flask_login",
-]
+
 
 [tool.setuptools.packages.find]
 include = ["iBuzz*"]  
