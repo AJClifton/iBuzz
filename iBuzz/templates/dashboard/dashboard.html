@@ -1,0 +1,557 @@
+<!doctype html>
+<html lang="en" data-bs-theme="auto">
+<head>
+
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="">
+  <meta name="author" content="Mark Otto, Jacob Thornton, and Bootstrap contributors">
+  <meta name="generator" content="Hugo 0.122.0">
+  <title>iBuzz2 - Home</title>
+
+  <link rel="canonical" href="https://getbootstrap.com/docs/5.3/examples/dashboard/">
+
+
+
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@docsearch/css@3">
+
+  <link href="templates/bootstrap.css" rel="stylesheet" crossorigin="anonymous">
+
+  <!-- Favicons
+  <link rel="apple-touch-icon" href="/docs/5.3/assets/img/favicons/apple-touch-icon.png" sizes="180x180">
+  <link rel="icon" href="/docs/5.3/assets/img/favicons/favicon-32x32.png" sizes="32x32" type="image/png">
+  <link rel="icon" href="/docs/5.3/assets/img/favicons/favicon-16x16.png" sizes="16x16" type="image/png">
+  <link rel="manifest" href="/docs/5.3/assets/img/favicons/manifest.json">
+  <link rel="mask-icon" href="/docs/5.3/assets/img/favicons/safari-pinned-tab.svg" color="#712cf9">
+  <link rel="icon" href="/docs/5.3/assets/img/favicons/favicon.ico">
+  <meta name="theme-color" content="#712cf9">
+  -->
+
+  <style>
+    .bi {
+      vertical-align: -.125em;
+      fill: currentColor;
+    }
+
+    .chart-container {
+      position: relative;
+      margin: auto;
+      height: 60vh;
+      width: 80vw;
+      } 
+  </style>
+
+
+  <!-- Custom styles for this template -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.min.css" rel="stylesheet">
+  <!-- Custom styles for this template -->
+  <link href="templates/dashboard/dashboard.css" rel="stylesheet">
+</head>
+
+
+<body onload="setup()">
+
+<svg xmlns="http://www.w3.org/2000/svg" class="d-none">
+  <symbol id="door-closed" viewBox="0 0 16 16">
+    <path d="M3 2a1 1 0 0 1 1-1h8a1 1 0 0 1 1 1v13h1.5a.5.5 0 0 1 0 1h-13a.5.5 0 0 1 0-1H3V2zm1 13h8V2H4v13z"/>
+    <path d="M9 9a1 1 0 1 0 2 0 1 1 0 0 0-2 0z"/>
+  </symbol>
+  <symbol id="gear-wide-connected" viewBox="0 0 16 16">
+    <path d="M7.068.727c.243-.97 1.62-.97 1.864 0l.071.286a.96.96 0 0 0 1.622.434l.205-.211c.695-.719 1.888-.03 1.613.931l-.08.284a.96.96 0 0 0 1.187 1.187l.283-.081c.96-.275 1.65.918.931 1.613l-.211.205a.96.96 0 0 0 .434 1.622l.286.071c.97.243.97 1.62 0 1.864l-.286.071a.96.96 0 0 0-.434 1.622l.211.205c.719.695.03 1.888-.931 1.613l-.284-.08a.96.96 0 0 0-1.187 1.187l.081.283c.275.96-.918 1.65-1.613.931l-.205-.211a.96.96 0 0 0-1.622.434l-.071.286c-.243.97-1.62.97-1.864 0l-.071-.286a.96.96 0 0 0-1.622-.434l-.205.211c-.695.719-1.888.03-1.613-.931l.08-.284a.96.96 0 0 0-1.186-1.187l-.284.081c-.96.275-1.65-.918-.931-1.613l.211-.205a.96.96 0 0 0-.434-1.622l-.286-.071c-.97-.243-.97-1.62 0-1.864l.286-.071a.96.96 0 0 0 .434-1.622l-.211-.205c-.719-.695-.03-1.888.931-1.613l.284.08a.96.96 0 0 0 1.187-1.186l-.081-.284c-.275-.96.918-1.65 1.613-.931l.205.211a.96.96 0 0 0 1.622-.434l.071-.286zM12.973 8.5H8.25l-2.834 3.779A4.998 4.998 0 0 0 12.973 8.5zm0-1a4.998 4.998 0 0 0-7.557-3.779l2.834 3.78h4.723zM5.048 3.967c-.03.021-.058.043-.087.065l.087-.065zm-.431.355A4.984 4.984 0 0 0 3.002 8c0 1.455.622 2.765 1.615 3.678L7.375 8 4.617 4.322zm.344 7.646.087.065-.087-.065z"/>
+  </symbol>
+  <symbol id="list" viewBox="0 0 16 16">
+    <path fill-rule="evenodd" d="M2.5 12a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5zm0-4a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5zm0-4a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5z"/>
+</svg>
+
+<header class="navbar sticky-top bg-dark flex-md-nowrap p-0 shadow" data-bs-theme="dark">
+  <a class="navbar-brand col-md-3 col-lg-2 me-0 px-3 fs-6 text-white" href="#">iBuzz2</a>
+
+  <ul class="navbar-nav flex-row d-md-none">
+    <li class="nav-item text-nowrap">
+      <button class="nav-link px-3 text-white" type="button" data-bs-toggle="offcanvas" data-bs-target="#sidebarMenu" aria-controls="sidebarMenu" aria-expanded="false" aria-label="Toggle navigation">
+        <svg class="bi"><use xlink:href="#list"/></svg>
+      </button>
+    </li>
+  </ul>
+</header>
+
+<div class="container-fluid">
+  <div class="row">
+    <div class="sidebar border border-right col-md-3 col-lg-2 p-0 bg-body-tertiary">
+      <div class="offcanvas-md offcanvas-end bg-body-tertiary" tabindex="-1" id="sidebarMenu" aria-labelledby="sidebarMenuLabel">
+        <div class="offcanvas-header">
+          <h5 class="offcanvas-title" id="sidebarMenuLabel">iBuzz2</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#sidebarMenu" aria-label="Close"></button>
+        </div>
+        <div class="offcanvas-body d-md-flex flex-column p-0 pt-lg-3 overflow-y-auto" style="height: 100vh">
+          
+          <div id="add-sensor-parent"></div>
+
+          <hr class="my-3">
+          
+          <div id="sensor-options-parent"></div>      
+
+          <hr class="my-3">
+
+          <ul class="nav flex-column mb-auto">
+            <li class="nav-item">
+              <a class="nav-link d-flex align-items-center gap-2" href="/settings">
+                <svg class="bi"><use xlink:href="#gear-wide-connected"/></svg>
+                Settings
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link d-flex align-items-center gap-2" href="/logout">
+                <svg class="bi"><use xlink:href="#door-closed"/></svg>
+                Sign out
+              </a>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+      <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+        <h1 class="h2">Home</h1>
+        <div class="btn-toolbar mb-2 mb-md-0">
+          <button type="button" class="btn btn-sm btn-outline-secondary" onclick="fetch_updated_data()">Fetch Updates</button>
+          <button type="button" class="btn btn-sm btn-outline-secondary" onclick="toggle_points()">Show / Hide points</button>
+          <button type="button" class="btn btn-sm btn-outline-secondary" onclick="window.location.href = '/export'">Export</button>
+        </div>
+      </div>
+
+      <div class="chart-container">
+        <canvas class="my-4 w-100" id="myChart" width="900" height="380"></canvas>
+      </div>
+
+      <table id="recent_values_table"></table>    
+
+    </main>
+  </div>
+</div>
+<script src="templates/bootstrap.js" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.3.0/dist/chart.umd.js" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-moment@^1"></script>
+<script src="https://cdn.jsdelivr.net/npm/hammerjs@2.0.8"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom"></script>
+<script src="https://cdn.jsdelivr.net/npm/luxon@3.4.4/build/global/luxon.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-scale-timestack/dist/chartjs-scale-timestack.min.js"></script>
+<link href="https://cdn.datatables.net/v/bs5/jq-3.7.0/dt-2.1.8/b-3.2.0/b-colvis-3.2.0/cr-2.0.4/fh-4.0.1/r-3.0.3/rg-1.5.1/rr-1.5.0/sc-2.4.3/sp-2.3.3/sl-2.1.0/datatables.min.css" rel="stylesheet">
+ 
+<script src="https://cdn.datatables.net/v/bs5/jq-3.7.0/dt-2.1.8/b-3.2.0/b-colvis-3.2.0/cr-2.0.4/fh-4.0.1/r-3.0.3/rg-1.5.1/rr-1.5.0/sc-2.4.3/sp-2.3.3/sl-2.1.0/datatables.min.js"></script>
+
+
+<script>
+
+
+  let fetched_data = {}
+  let data = []
+  const ctx = document.getElementById('myChart')
+  let myChart = new Chart(ctx, {options: {plugins: {zoom: {}}}})
+  let datasets = []
+  let table = null
+
+  const aboveValue = (ctx, value, return_value, default_value) => ctx.p1.parsed.y > value || ctx.p0.parsed.y > value ? return_value : default_value
+  const belowValue = (ctx, value, return_value, default_value) => ctx.p1.parsed.y < value || ctx.p0.parsed.y < value ? return_value : default_value
+  const defaultColour = 'rgb(42, 195, 212)'
+  const defaultPointRadius = 3
+
+  function setup() {
+    make_chart()
+    fetch_hawk_serial_numbers().then(serial_numbers => {
+      add_hawk_sensor_dropdowns(serial_numbers)
+      add_recent_value_widgets(serial_numbers)
+    })
+  }
+
+  class SensorData {
+    constructor(serial_number, hive_number, sensor, json) {
+      this.serial_number = serial_number
+      this.hive_number = hive_number
+      this.sensor = sensor
+      this.data = []
+      this.long_name = serial_number + "_" + hive_number + "_" + sensor
+      this.addData(json)
+
+      this.chartjs_dataset = {
+        long_name: this.long_name,
+        label: sensor,
+        data: this.data,
+        backgroundColor: defaultColour,
+        parsing: {
+          xAxisKey: 't',
+          yAxisKey: 'y',
+        },
+        segment: {
+              borderColor: defaultColour,
+            },
+      }
+
+      myChart.data.datasets.push(this.chartjs_dataset)
+    };
+
+    removeDataset() {
+      let removalIndex = myChart.data.datasets.indexOf(this.chartjs_dataset)
+      if(removalIndex >= 0) {
+          myChart.data.datasets.splice(removalIndex, 1);
+      }
+    }
+
+    addData(json) {
+      if (Object.keys(json).length === 0) {
+        return
+      }
+      let times = json['time']
+      let sensor_data = json[this.sensor]
+      for (let i = 0; i < times.length; i++) {
+        this.data.push({t:times[i]*1000, y:sensor_data[i]})
+      }
+      console.log(this.data)
+      myChart.update()
+    };
+
+    fetchAllData() {
+      fetch_data(this.serial_number, this.hive_number, this.sensor).then((r) => this.addData(r))
+    }
+  }
+
+
+  class RecentValues {
+
+    constructor(values, names) {
+      this.values = values
+      this.names = names;
+
+      [this.values[3], this.values[4]] = [this.values[4], this.values[3]];
+      [this.values[1], this.values[3]] = [this.values[3], this.values[1]];
+      [this.values[2], this.values[4]] = [this.values[4], this.values[2]];
+
+      let time_since = Math.round(((new Date() / 1000) - this.values[2]) / 60);
+      console.log(time_since);
+      this.values[2] = time_since;
+
+    }
+
+    get_value_by_name(name) {
+      let index = this.names.indexOf(name)
+      if (index > -1) {
+        return this.values[index]
+      }
+      return null
+    }
+
+    get_time_since() {
+      let sense_time = this.get_value_by_name('time')
+      let d = new Date()
+      let s = (d / 1000)
+      let diff = (s - sense_time)
+      return Math.round(diff / 60)
+    }
+
+    make_tr() {
+      let tr = document.createElement("tr")
+      this.values.forEach(value => {
+        let td = document.createElement("td")
+        td.innerText = value
+        tr.appendChild(td)
+      })
+      return tr
+    }
+    
+  }
+
+  function make_chart() {
+    myChart.destroy()
+    myChart = new Chart(ctx, {
+      type: 'line',
+      options: {
+        responsive: false,
+        maintainAspectRatio: false,
+        plugins: {
+          zoom: {
+            pan: {
+              enabled: true,
+              mode: 'x'
+            },
+            zoom: {
+              mode: 'x',
+              wheel: {
+                enabled: true,
+              },
+              pinch: {
+                enabled: true,
+              },
+            }
+          },
+        },
+        scales: {
+          x: {
+            type: 'timestack',
+          }
+        },
+        responsive: true,
+        animation: {
+          duration: 500,
+        },
+        elements: {
+          point: {
+            radius: defaultPointRadius,
+            pointHitRadius: 8,
+            borderColor: defaultColour,
+          }
+        },
+      },
+      data: {
+        datasets: []
+      }
+    })
+  }
+
+
+  /* NEEDS TO BE UPDATED */
+  /* Fetch data for all existing datasets starting from the time of the most recent value */
+  async function fetch_updated_data() {
+    for (let i = 0; i < datasets.length; i++) {
+      let existing_dataset = datasets[i].data
+      fetch("/data/" + datasets[i].serial_number + "/" + datasets[i].hive_number + "/" + datasets[i].sensor + "/" + existing_dataset[existing_dataset.length - 1]['t']/1000).then((r) => r.json()).then((json) => {
+        console.log(json)
+        datasets[i].addData(json)
+      }).then(() => {
+        myChart.update('none')
+      })
+    }
+    fetch_hawk_serial_numbers().then(serial_numbers => {
+      table.destroy()
+      document.getElementById("recent_values_table").innerHTML = ""
+      add_recent_value_widgets(serial_numbers)
+    })
+  }
+
+  /* Fetch data for a sensor for a given serial_number and hive_number */
+  async function fetch_data(serial_number, hive_number, field) {
+    return fetch("/data/" + serial_number + "/" + hive_number + "/" + field).then((r) => {
+      if (!r.ok) {
+        throw new Error("Bad Request")
+      }
+      return r.json()
+    })
+  }
+
+  /* Get the names of the available sensors */
+  function get_sensor_names(serial_number, hive_number) {
+    fetch('/names')
+            .then(r => r.json())
+            .then(json => {
+              json['names'].forEach((name) => {
+                if (name != "serial_number" && name != "time" && name != "hive_number") {
+                  add_sensor_option(name, serial_number, hive_number)
+                }
+              })
+            })
+  }
+
+  function add_sensor_option_dropdown(name, serial_number, hive_number) {
+    let long_name_printable = serial_number + " - " + hive_number + " - " + name
+    let long_name = serial_number + "_" + hive_number + "_" + name
+    let div = document.createElement('div')
+    div.setAttribute('class', 'dropdown')
+    div.setAttribute('id', long_name)
+    div.innerHTML = `
+        <button class="btn btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" style="background-color: ` + defaultColour + `">
+              `+ long_name_printable + `
+            </button>
+            <ul class="dropdown-menu" style="">
+              <li><h6 class="dropdown-header">Graph Options</h6></li>
+              <li>
+                <div style="display: inline-block;">
+                  <div class="input-group mb-3" style="float: left; width: 60%;">
+                    <span class="input-group-text" id="basic-addon1">Highlight Above</span>
+                    <input type="text" class="form-control" placeholder="20" aria-label="Value" aria-describedby="basic-addon1" id="`+ long_name + "above_value" + `">
+                  </div>
+                  <input type="color" class="form-control form-control-color" id="`+ long_name + "above_colour" + `" value="#CCCCCC" title="Choose a color" style="float: left;">
+                  <button class="btn btn-light" style="float: left;" id=` + long_name + "above_apply" + `>Apply</button>
+                </div>
+              </li>
+              <li>
+                <div style="display: inline-block;">
+                  <div class="input-group mb-3" style="float: left; width: 60%;">
+                    <span class="input-group-text" id="basic-addon1">Highlight Below</span>
+                    <input type="text" class="form-control" placeholder="20" aria-label="Value" aria-describedby="basic-addon1"id="`+ long_name + "below_value" + `">
+                  </div>
+                  <input type="color" class="form-control form-control-color" id="`+ long_name + "below_colour" + `" value="#CCCCCC" title="Choose a color" style="float: left;">
+                  <button class="btn btn-light" style="float: left;" id=` + long_name + "below_apply" + `>Apply</button>
+                </div>
+              </li>
+              <li>
+                <div style="display: inline-block;">
+                  <input type="color" class="form-control form-control-color" id="`+ long_name + "line_colour" + `" value="#CCCCCC" title="Choose a color" style="float: left;">
+                  <button class="btn btn-light" style="float: left;" id=` + long_name + "line_apply" + `>Apply</button>
+                </div>
+              </li>
+              <li><hr class="dropdown-divider"></li>
+              <li><button class="dropdown-item" id=` + long_name + "remove" + `>Remove</button></li>
+            </ul>
+        `
+    document.getElementById("sensor-options-parent").appendChild(div);
+    document.getElementById(long_name + "above_apply").onclick = () => {change_highlight_above(long_name, document.getElementById(long_name+"above_value").value, document.getElementById(long_name+"above_colour").value, document.getElementById(long_name+"line_colour").value)}
+    document.getElementById(long_name + "below_apply").onclick = () => {change_highlight_below(long_name, document.getElementById(long_name+"below_value").value, document.getElementById(long_name+"below_colour").value, document.getElementById(long_name+"line_colour").value)}
+    document.getElementById(long_name + "line_apply").onclick = () => {change_line_colour(long_name, document.getElementById(long_name+"line_colour").value)}
+    document.getElementById(long_name + "remove").onclick = () => {remove_dataset(long_name)}
+  }
+
+
+  function change_line_colour(name, colour) {
+    console.log(name, colour)
+    datasets.forEach(element => {
+      if (element.long_name === name) {
+        element.chartjs_dataset.segment.borderColor = colour
+        element.chartjs_dataset.backgroundColor = colour
+        myChart.update()
+      }
+    });
+    document.getElementById(name).childNodes[1].style.background = colour
+  }
+
+
+  function change_highlight_above(name, value, colour, default_colour) {
+    console.log(name, value, colour)
+    datasets.forEach(element => {
+      if (element.long_name === name) {
+        element.chartjs_dataset.segment.borderColor = ctx => aboveValue(ctx, value, colour, default_colour)
+        myChart.update()
+      }
+    });
+  }
+
+  function change_highlight_below(name, value, colour, default_colour) {
+    console.log(name, value, colour)
+    datasets.forEach(element => {
+      if (element.long_name === name) {
+        element.chartjs_dataset.segment.borderColor = ctx => belowValue(ctx, value, colour, default_colour)
+        myChart.update()
+      }
+    });
+  }
+
+
+  function remove_dataset(name) {
+    for (let i = 0; i < datasets.length; i++) {
+      if (datasets[i].long_name === name) {
+        datasets[i].removeDataset()
+        datasets.splice(i, 1);
+        break
+      } 
+    }
+    document.getElementById(name).remove()
+    myChart.update()
+  }
+
+
+  /**<li><a className="dropdown-item d-flex align-items-center gap-2 py-2" href="#">
+    <span className="d-inline-block bg-info rounded-circle p-1"></span>
+    Separated link
+  </a></li>**/
+
+  function add_sensor_option(name, serial_number, hive_number) {
+    let button = document.createElement("button")
+    button.className = "dropdown-item d-flex align-items-center gap-2 py-2"
+    button.innerText = name
+    if (Object.keys(fetched_data).includes(name)) {
+      return
+    }
+    button.onclick = () => {
+      datasets.forEach(element => {
+        if (element.sensor == name) {
+          return
+        }
+      });
+      let new_dataset = new SensorData(serial_number, hive_number, name, {})
+      new_dataset.fetchAllData()
+      datasets.push(new_dataset)
+      add_sensor_option_dropdown(name, serial_number, hive_number)
+    }
+    let li = document.createElement("li")
+    li.appendChild(button)
+    document.getElementById("sensor_add_dropdown_" + serial_number + "_" + hive_number).appendChild(li)
+  }
+
+
+  function toggle_points() {
+    myChart.options.elements.point.radius = myChart.options.elements.point.radius === defaultPointRadius ? 0 : defaultPointRadius
+    myChart.update()
+  }
+
+  function fetch_hawk_serial_numbers() {
+    return fetch("/serial_numbers").then((r) => r.json()).then((json) => json['serial_numbers'])
+  }
+
+  function add_hawk_sensor_dropdowns(serial_numbers) {
+    console.log(serial_numbers)
+    serial_numbers.forEach(serial_number => {
+      fetch("/hive_numbers/" + serial_number).then(r => r.json()).then(json => {
+        hive_numbers = json['hive_numbers']
+        hive_numbers.forEach(hive_number => {
+          document.getElementById("add-sensor-parent").innerHTML += `
+            <div class="dropdown">
+              <button class="btn btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                ` + serial_number + ` - ` + hive_number + `
+              </button>
+              <div class="dropdown-menu">
+                <div class="d-block position-static pt-0 mx-0 rounded-3 shadow overflow-hidden w-280px" data-bs-theme="light">
+                  <form class="dropdown-item p-2 mb-2 bg-body-tertiary border-bottom">
+                    <input type="search" class="form-control" autocomplete="false" placeholder="Type to filter...">
+                  </form>
+                    <ul class="list-unstyled mb-0" id="sensor_add_dropdown_` + serial_number + "_" + hive_number + `">
+
+                    </ul>
+                </div>
+              </div>
+            </div>
+          `
+          get_sensor_names(serial_number, hive_number)
+        });
+      })
+    });
+  }
+
+
+  function add_recent_value_widgets(serial_numbers) {
+    fetch('/names').then(r => r.json()).then(j => j['names']).then(names => {
+      let thead = document.createElement("thead")
+      let tr = document.createElement("tr")
+      tr.setAttribute("data-sort-method", "None")
+      thead.appendChild(tr);
+      [names[3], names[4]] = [names[4], names[3]];
+      [names[1], names[3]] = [names[3], names[1]];
+      [names[2], names[4]] = [names[4], names[2]];
+      names[2] = "Minutes Since Last Update";
+      names.forEach(name => {
+        let th = document.createElement("th")
+        th.innerText = name
+        tr.appendChild(th)
+      })
+      document.getElementById("recent_values_table").appendChild(thead)
+
+      serial_numbers.forEach(serial_number => {
+        fetch('/recent_values/' + serial_number).then(r => r.json()).then(j => j['recent_values']).then(recent_values => {
+          let tbody = document.createElement("tbody")
+          for (const [hive_number, values] of Object.entries(recent_values)) {
+            let r = new RecentValues(values, names)
+            tbody.appendChild(r.make_tr())
+          }
+          document.getElementById("recent_values_table").appendChild(tbody)
+        }).then((r) => {
+          table = new DataTable('#recent_values_table', {scrollX:true}) 
+        })
+      })
+    })
+  }
+
+</script>
+
+
+
+</body>
+</html>

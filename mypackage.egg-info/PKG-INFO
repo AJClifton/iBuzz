@@ -1,0 +1,14 @@
+Metadata-Version: 2.2
+Name: mypackage
+Version: 0.0.1
+Requires-Dist: calendar
+Requires-Dist: sqlite3
+Requires-Dist: smtplib
+Requires-Dist: os
+Requires-Dist: threading
+Requires-Dist: time
+Requires-Dist: werkzeug.security
+Requires-Dist: uuid
+Requires-Dist: yaml
+Requires-Dist: flask
+Requires-Dist: flask_login

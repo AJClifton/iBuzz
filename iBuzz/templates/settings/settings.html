@@ -1,0 +1,492 @@
+<!doctype html>
+<html lang="en" data-bs-theme="auto">
+
+<head>
+
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="">
+  <meta name="author" content="Mark Otto, Jacob Thornton, and Bootstrap contributors">
+  <meta name="generator" content="Hugo 0.122.0">
+  <title>iBuzz2 - Settings</title>
+
+  <link rel="canonical" href="https://getbootstrap.com/docs/5.3/examples/starter-template/">
+
+
+
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@docsearch/css@3">
+
+  <link href="templates\bootstrap.css" rel="stylesheet" crossorigin="anonymous">
+
+  <meta name="theme-color" content="#712cf9">
+
+</head>
+
+<body onload="setup()">
+
+  <div class="col-lg-8 mx-auto p-4 py-md-5">
+    <header class="d-flex align-items-center pb-3 mb-5 border-bottom">
+      <a href="/dashboard" class="d-flex align-items-center text-body-emphasis text-decoration-none">
+        <span class="fs-4">Settings</span>
+      </a>
+    </header>
+
+    <h5>Register a New Hawk</h5>
+    <div class="mb-3">
+      <label class="form-label">Enter the serial number provided by Digital Matter</label>
+      <input type="text" step="1" class="form-control" id="register_hawk_id">
+    </div>
+    <div class="mb-3">
+      <button class="btn btn-primary" onclick="register_hawk()">Submit Serial Number</button>
+    </div>
+
+    <h5>Your Owned Hawks</h5>
+    <ul class="list-group" id="owned_list"></ul>
+
+
+    <div style="padding: 15px;"></div>
+    <hr>
+    <div style="padding: 15px;"></div>
+
+
+    <h5>Add visibility permissions</h5>
+    <div class="mb-3">
+      <label for="exampleSelect" class="form-label">Serial Number</label>
+      <select class="form-select" id="permission_serial_number">
+        <option selected="selected" value="">Serial Number</option>
+      </select>
+    </div>
+    <div class="mb-3">
+      <label class="form-label">Enter a specific user's email, or 'ALL' (case sensitive) for global access.</label>
+      <input type="text" step="1" class="form-control" id="permission_recipient">
+    </div>
+    <div class="mb-3">
+      <button class="btn btn-primary" onclick="grant_permission()">Grant Permission</button>
+    </div>
+
+    <h5>Granted Permissions</h5>
+    <ul class="list-group" id="permission_list"></ul>
+
+
+    <div style="padding: 15px;"></div>
+    <hr>
+    <div style="padding: 15px;"></div>
+
+
+    <h5>Add Notification</h5>
+
+    <div class="mb-3">
+      <label for="exampleSelect" class="form-label">Serial Number</label>
+      <select class="form-select" id="notification_serial_number">
+        <option selected="selected" value="">Serial Number</option>
+      </select>
+    </div>
+    <div class="mb-3">
+      <label for="exampleSelect" class="form-label">Hive Number</label>
+      <select class="form-select" id="notification_hive_number">
+        <option selected="selected" value="">Please select serial_number first</option>
+      </select>
+    </div>
+    <div class="mb-3">
+      <label for="exampleSelect" class="form-label">Sensor</label>
+      <select class="form-select" id="notification_sensor">
+        <option selected="selected" value="">Sensor</option>
+      </select>
+    </div>
+    <fieldset class="mb-3">
+      <div class="form-check">
+        <input type="radio" name="radios" class="form-check-input" value="l" id="notification_less_then">
+        <label class="form-check-label" for="exampleRadio1">Less Than</label>
+      </div>
+      <div class="mb-3 form-check">
+        <input type="radio" name="radios" class="form-check-input" value="g" id="notification_greater_than">
+        <label class="form-check-label" for="exampleRadio2">Greater Than</label>
+      </div>
+    </fieldset>
+    <div class="mb-3">
+      <label for="exampleInputEmail1" class="form-label">Threshold Value</label>
+      <input type="number" step="0.1" class="form-control" id="notification_value">
+    </div>
+    <div class="mb-3">
+      <button class="btn btn-primary" onclick="submit_notification_form()">Add Notification</button>
+    </div>
+
+    <div style="padding: 30px;"></div>
+
+    <h5>Your Existing Notifications</h5>
+    <ul class="list-group" id="notification_list"></ul>
+
+    <footer class="pt-5 my-5 text-body-secondary border-top">
+      Templates originally created by the Bootstrap team &middot; &copy; 2024
+    </footer>
+  </div>
+  <script src="templates\bootstrap.js" crossorigin="anonymous"></script>
+  <script>
+
+    async function setup() {
+      await run_all_owned_hawk_methods()
+      await add_notification_serial_number_options()
+      await add_notification_sensor_options()
+      await list_notifications()
+    }
+
+    function fetch_notifications() {
+      return fetch('/notifications').then(r => r.json()).then(j => j['notifications'])
+    }
+
+    function delete_notification(notification_id) {
+      fetch('/remove_notification/' + notification_id)
+    }
+
+    function notification_li(notification) {
+      let li = document.createElement("li")
+      li.setAttribute("class", "alert-dismissible fade show list-group-item")
+      li.setAttribute("aria-disabled", "true")
+      li.innerText = "Serial Number: " + notification[2] + ", Hive Number: " + notification[3] + ", " + notification[4] + " " + notification[5] + " " + notification[6]
+      let button = document.createElement("button")
+      button.setAttribute("type", "button")
+      button.setAttribute("class", "btn-close")
+      button.setAttribute("data-bs-dismiss", "alert")
+      button.setAttribute("aria-label", "Close")
+      let notification_id = notification[0]
+      button.addEventListener("click", function () {
+        li.setAttribute("class", li.getAttribute("class") + " disabled")
+        delete_notification(notification_id)
+        refresh_notifications_list()
+      }, false)
+      li.appendChild(button)
+      return li
+    }
+
+    function no_notifications_li() {
+      let li = document.createElement("li")
+      li.setAttribute("class", "alert-dismissible fade show list-group-item")
+      li.setAttribute("aria-disabled", "true")
+      li.innerText = "You have no notifications. Create some above."
+      return li
+    }
+
+    function list_notifications() {
+      fetch_notifications().then(notifications => {
+        let parent = document.getElementById("notification_list")
+        if (notifications.length === 0) {
+          let li = no_notifications_li()
+          parent.appendChild(li)
+        }
+        else {
+          notifications.forEach(notification => {
+            console.log(notification)
+            let li = notification_li(notification)
+            parent.appendChild(li)
+          });
+        }
+      })
+    }
+
+    function refresh_notifications_list() {
+      let parent = document.getElementById("notification_list")
+      parent.innerHTML = ""
+      list_notifications()
+    }
+
+    function fetch_visible_serial_numbers() {
+      return fetch('/serial_numbers').then(r => r.json()).then(j => j['serial_numbers'])
+    }
+
+    function add_notification_serial_number_options() {
+      fetch_visible_serial_numbers().then(serial_numbers => {
+        let parent = document.getElementById("notification_serial_number")
+        parent.onchange = function () {
+          add_hive_number_options(this.value)
+        }
+        serial_numbers.forEach(serial_number => {
+          let option = document.createElement("option")
+          option.setAttribute("value", serial_number[0])
+          option.innerText = serial_number[0]
+          parent.appendChild(option)
+        });
+      })
+    }
+
+    function refresh_notification_serial_number_options() {
+      let parent = document.getElementById("notification_serial_number")
+      parent.length = 1
+      add_notification_serial_number_options()
+    }
+
+    function fetch_hive_numbers(serial_number) {
+      return fetch('/hive_numbers/' + serial_number).then(r => r.json()).then(j => j['hive_numbers'])
+    }
+
+    function add_hive_number_options(serial_number) {
+      fetch_hive_numbers(serial_number).then(hive_numbers => {
+        let parent = document.getElementById("notification_hive_number")
+        parent.length = 1
+        hive_numbers.forEach(hive_number => {
+          let option = document.createElement("option")
+          option.setAttribute("value", hive_number)
+          option.innerText = hive_number
+          parent.appendChild(option)
+        });
+      })
+    }
+
+    function fetch_sensor_names() {
+      return fetch('/names').then(r => r.json()).then(j => j['names'])
+    }
+
+    function add_notification_sensor_options() {
+      fetch_sensor_names().then(names => {
+        let parent = document.getElementById("notification_sensor")
+        names.forEach(name => {
+          if (name != "time" && name != "serial_number" && name != "hive_number") {
+            let option = document.createElement("option")
+            option.setAttribute("value", name)
+            option.innerText = name
+            parent.appendChild(option)
+          }
+        });
+      })
+    }
+
+    function submit_notification_form() {
+      let serial_number = document.getElementById("notification_serial_number").value
+      let hive_number = document.getElementById("notification_hive_number").value
+      let sensor = document.getElementById("notification_sensor").value
+      let sign = document.querySelector('input[name="radios"]:checked').value
+      if (sign === "l") {
+        sign = '<'
+      }
+      else {
+        sign = '>'
+      }
+      let value = document.getElementById("notification_value").value
+
+      console.log('/add_notification/' + serial_number + "/" + hive_number + "/" + sensor + "/" + sign + "/" + value)
+      fetch('/add_notification/' + serial_number + "/" + hive_number + "/" + sensor + "/" + sign + "/" + value).then(r => refresh_notifications_list())
+    }
+
+    function register_hawk() {
+      let serial_number_input = document.getElementById("register_hawk_id")
+      fetch('register/' + serial_number_input.value).then(r => {
+        console.log(r)
+        serial_number_input.value = ""
+      })
+    }
+
+    function fetch_owned_serial_numbers() {
+      return fetch('/owned_serial_numbers').then(r => r.json()).then(j => j['owned_serial_numbers'])
+    }
+
+    function deregister_hawk(serial_number) {
+      fetch('/deregister/' + serial_number)
+    }
+
+    function owned_hawk_li(serial_number) {
+      let li = document.createElement("li")
+      li.setAttribute("class", "alert-dismissible fade show list-group-item")
+      li.setAttribute("aria-disabled", "true")
+      li.innerText = "Serial Number: " + serial_number
+      let button = document.createElement("button")
+      button.setAttribute("type", "button")
+      button.setAttribute("class", "btn-close")
+      button.setAttribute("data-bs-dismiss", "alert")
+      button.setAttribute("aria-label", "Close")
+      button.addEventListener("click", function () {
+        li.setAttribute("class", li.getAttribute("class") + " disabled")
+        deregister_hawk(serial_number)
+        refresh_owned_hawk_list()
+      }, false)
+      li.appendChild(button)
+      return li
+    }
+
+    function no_owned_li() {
+      let li = document.createElement("li")
+      li.setAttribute("class", "alert-dismissible fade show list-group-item")
+      li.setAttribute("aria-disabled", "true")
+      li.innerText = "Register your first Hawk above."
+      return li
+    }
+
+    function list_owned_hawks() {
+      fetch_owned_serial_numbers().then(serial_numbers => {
+        let parent = document.getElementById("owned_list")
+        if (serial_numbers.length === 0) {
+          let li = no_owned_li()
+          parent.appendChild(li)
+        }
+        else {
+          serial_numbers.forEach(serial_number => {
+            console.log(serial_number)
+            let li = owned_hawk_li(serial_number)
+            parent.appendChild(li)
+          });
+        }
+      })
+    }
+
+    function list_owned_hawks_prefetched(serial_numbers) {
+      let parent = document.getElementById("owned_list")
+      if (serial_numbers.length === 0) {
+        let li = no_owned_li()
+        parent.appendChild(li)
+      }
+      else {
+        serial_numbers.forEach(serial_number => {
+          console.log(serial_number)
+          let li = owned_hawk_li(serial_number)
+          parent.appendChild(li)
+        });
+      }
+    }
+
+    function refresh_owned_hawk_list() {
+      let parent = document.getElementById("owned_list")
+      parent.innerHTML = ""
+      list_owned_hawks()
+    }
+
+    function grant_permission() {
+      let serial_number = document.getElementById("permission_serial_number").value
+      let recipient_input = document.getElementById("permission_recipient")
+      fetch('add_visibility/' + serial_number + "/" + recipient_input.value).then(r => {
+        console.log(r)
+        recipient_input.value = ""
+        refresh_permission_list()
+      })
+    }
+
+    function add_permission_serial_number_options() {
+      fetch_owned_serial_numbers().then(serial_numbers => {
+        let parent = document.getElementById("permission_serial_number")
+        serial_numbers.forEach(serial_number => {
+          let option = document.createElement("option")
+          option.setAttribute("value", serial_number[0])
+          option.innerText = serial_number[0]
+          parent.appendChild(option)
+        });
+      })
+    }
+
+    function add_permission_serial_number_options_prefetched(serial_numbers) {
+      let parent = document.getElementById("permission_serial_number")
+      serial_numbers.forEach(serial_number => {
+        let option = document.createElement("option")
+        option.setAttribute("value", serial_number[0])
+        option.innerText = serial_number[0]
+        parent.appendChild(option)
+      });
+    }
+
+
+    function refresh_permission_serial_number_options() {
+      let parent = document.getElementById("permission_serial_number")
+      parent.length = 1
+      add_permission_serial_number_options()
+    }
+
+    function fetch_visibility_permissions(serial_number) {
+      return fetch('/visibility/' + serial_number).then(r => r.json()).then(j => j['visibility'])
+    }
+
+    function remove_permission(serial_number, user_id) {
+      fetch('/remove_visibility/' + serial_number + "/" + user_id)
+    }
+
+    function visibility_permission_li(serial_number, user_id, email) {
+      let li = document.createElement("li")
+      li.setAttribute("class", "alert-dismissible fade show list-group-item")
+      li.setAttribute("aria-disabled", "true")
+      li.innerText = "Serial Number: " + serial_number + ", User: " + ((user_id === "ALL") ? user_id : email)
+      let button = document.createElement("button")
+      button.setAttribute("type", "button")
+      button.setAttribute("class", "btn-close")
+      button.setAttribute("data-bs-dismiss", "alert")
+      button.setAttribute("aria-label", "Close")
+      button.addEventListener("click", function () {
+        li.setAttribute("class", li.getAttribute("class") + " disabled")
+        remove_permission(serial_number, user_id)
+        refresh_permission_list()
+      }, false)
+      li.appendChild(button)
+      return li
+    }
+
+    function no_permission_li() {
+      let li = document.createElement("li")
+      li.setAttribute("class", "alert-dismissible fade show list-group-item")
+      li.setAttribute("aria-disabled", "true")
+      li.innerText = "No active permission granted. Grant some above."
+      return li
+    }
+
+    function list_visibility_permission() {
+      let total_permissions = 0
+      let parent = document.getElementById("permission_list")
+      fetch_owned_serial_numbers().then(serial_numbers => {
+        serial_numbers.forEach(serial_number => {
+          fetch_visibility_permissions(serial_number).then(permissions => {
+            permissions.forEach(permission => {
+              console.log(permission)
+              let li = visibility_permission_li(permission[0], permission[1], permission[2])
+              parent.appendChild(li)
+            })
+            total_permissions = total_permissions + permissions.length
+          })
+        })
+      })
+      if (parent.innerHTML === "") {
+        let li = no_permission_li()
+        parent.appendChild(li)
+      }
+    }
+
+    function list_visibility_permission_prefetched(serial_numbers) {
+      let total_permissions = 0
+      let parent = document.getElementById("permission_list")
+      serial_numbers.forEach(serial_number => {
+        fetch_visibility_permissions(serial_number).then(permissions => {
+          permissions.forEach(permission => {
+            console.log(permission)
+            let li = visibility_permission_li(permission[0], permission[1], permission[2])
+            parent.appendChild(li)
+          })
+          total_permissions = total_permissions + permissions.length
+        })
+      })
+      if (parent.innerHTML === "") {
+        let li = no_permission_li()
+        parent.appendChild(li)
+      }
+    }
+
+    function refresh_permission_list() {
+      let parent = document.getElementById("permission_list")
+      parent.innerHTML = ""
+      list_visibility_permission()
+    }
+
+
+    function run_all_owned_hawk_methods() {
+      fetch_owned_serial_numbers().then(serial_numbers => {
+        list_visibility_permission_prefetched(serial_numbers)
+        add_permission_serial_number_options_prefetched(serial_numbers)
+        list_owned_hawks_prefetched(serial_numbers)
+      })
+    }
+
+
+    function refesh_all_owned_hawk_methods() {
+      fetch_owned_serial_numbers().then(serial_numbers => {
+        list_visibility_permission_prefetched(serial_numbers)
+        add_permission_serial_number_options_prefetched(serial_numbers)
+        list_owned_hawks_prefetched(serial_numbers)
+      })
+    }
+
+  </script>
+
+</body>
+
+</html>

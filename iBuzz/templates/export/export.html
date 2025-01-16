@@ -1,0 +1,122 @@
+<!doctype html>
+<html lang="en" data-bs-theme="auto">
+
+<head>
+
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="">
+  <meta name="author" content="Mark Otto, Jacob Thornton, and Bootstrap contributors">
+  <meta name="generator" content="Hugo 0.122.0">
+  <title>iBuzz2 - Export</title>
+
+  <link rel="canonical" href="https://getbootstrap.com/docs/5.3/examples/starter-template/">
+
+
+
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@docsearch/css@3">
+
+  <link href="templates\bootstrap.css" rel="stylesheet" crossorigin="anonymous">
+
+  <meta name="theme-color" content="#712cf9">
+
+</head>
+
+<body onload="setup()">
+
+  <div class="col-lg-8 mx-auto p-4 py-md-5">
+    <header class="d-flex align-items-center pb-3 mb-5 border-bottom">
+      <a href="/dashboard" class="d-flex align-items-center text-body-emphasis text-decoration-none">
+        <span class="fs-4">Export</span>
+      </a>
+    </header>
+
+    <h5>Export data as CSV</h5>
+    <div class="mb-3">
+      <label for="exampleSelect" class="form-label">Serial Number</label>
+      <select class="form-select" id="csv_serial_number">
+        <option selected="selected" value="">Serial Number</option>
+      </select>
+    </div>
+    <div class="mb-3">
+      <button class="btn btn-primary" onclick="export_csv()">Export CSV</button>
+    </div>
+    
+    <div style="padding: 15px;"></div>
+    <hr>
+    <div style="padding: 15px;"></div>
+
+    <h5>Export replay log</h5>
+    <div class="mb-3">
+      <label for="exampleSelect" class="form-label">Serial Number</label>
+      <select class="form-select" id="replay_serial_number">
+        <option selected="selected" value="">Serial Number</option>
+      </select>
+    </div>
+    <div class="mb-3">
+      <button class="btn btn-primary" onclick="export_replay()">Export Replay Log</button>
+    </div>
+
+
+    <footer class="pt-5 my-5 text-body-secondary border-top">
+      Templates originally created by the Bootstrap team &middot; &copy; 2024
+    </footer>
+  </div>
+  <script src="templates\bootstrap.js" crossorigin="anonymous"></script>
+  <script>
+
+    async function setup() {
+      await add_csv_serial_number_options()
+      await add_replay_serial_number_options()
+    }
+
+
+    function fetch_visible_serial_numbers() {
+      return fetch('/serial_numbers').then(r => r.json()).then(j => j['serial_numbers'])
+    }
+
+    function add_csv_serial_number_options() {
+      fetch_visible_serial_numbers().then(serial_numbers => {
+        let parent = document.getElementById("csv_serial_number")
+        serial_numbers.forEach(serial_number => {
+          let option = document.createElement("option")
+          option.setAttribute("value", serial_number[0])
+          option.innerText = serial_number[0]
+          parent.appendChild(option)
+        });
+      })
+    }
+
+
+    function fetch_owned_serial_numbers() {
+      return fetch('/owned_serial_numbers').then(r => r.json()).then(j => j['owned_serial_numbers'])
+    }
+
+    function add_replay_serial_number_options() {
+      fetch_owned_serial_numbers().then(serial_numbers => {
+        let parent = document.getElementById("replay_serial_number")
+        serial_numbers.forEach(serial_number => {
+          let option = document.createElement("option")
+          option.setAttribute("value", serial_number[0])
+          option.innerText = serial_number[0]
+          parent.appendChild(option)
+        });
+      })
+    }
+
+    function export_csv() {
+        let parent = document.getElementById("csv_serial_number")
+        window.location.href = "/download_data/" + parent.value;
+    }
+
+
+    function export_replay() {
+        let parent = document.getElementById("replay_serial_number")
+        window.location.href = "/download_replay/" + parent.value;
+    }
+
+  </script>
+
+</body>
+
+</html>
