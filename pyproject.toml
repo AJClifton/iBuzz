@@ -2,11 +2,7 @@
 name = "mypackage"
 version = "0.0.1"
 dependencies = [
-    "sqlite3",
-    "smtplib",
-    "threading",
     "werkzeug.security",
-    "uuid",
     "yaml",
     "flask",
     "flask_login",
