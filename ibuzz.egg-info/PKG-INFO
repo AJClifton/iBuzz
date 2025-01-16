@@ -1,0 +1,7 @@
+Metadata-Version: 2.2
+Name: ibuzz
+Version: 0.0.1
+Requires-Dist: flask
+Requires-Dist: flask-login
+Requires-Dist: pyyaml
+Requires-Dist: Werkzeug
