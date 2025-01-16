@@ -1,7 +1,9 @@
 [project]
 name = "ibuzz"
 version = "0.0.1"
-
+dependencies = [
+    "flask"
+]
 
 [tool.setuptools.packages.find]
 include = ["iBuzz*"]  

@@ -7,7 +7,6 @@ import login_database
 import notifications
 import yaml
 
-
 config = yaml.safe_load(open("config.yaml"))
 app = flask.Flask(__name__, template_folder='templates')
 app.config['SECRET_KEY'] = config["secret_key"]
@@ -17,6 +16,8 @@ login_manager = flask_login.LoginManager(app)
 login_manager.login_view = "login"
 notification = notifications.Notifications(config["notifications_email"], config["notifications_email_password"], login_db)
 
+def create_app():
+    app.run()
 
 @app.route('/', methods=['GET'])
 def redirect_user():
