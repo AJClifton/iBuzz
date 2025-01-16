@@ -16,8 +16,6 @@ login_manager = flask_login.LoginManager(app)
 login_manager.login_view = "login"
 notification = notifications.Notifications(config["notifications_email"], config["notifications_email_password"], login_db)
 
-def create_app():
-    app.run()
 
 @app.route('/', methods=['GET'])
 def redirect_user():
