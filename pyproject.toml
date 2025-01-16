@@ -2,12 +2,9 @@
 name = "mypackage"
 version = "0.0.1"
 dependencies = [
-    "calendar",
     "sqlite3",
     "smtplib",
-    "os",
     "threading",
-    "time",
     "werkzeug.security",
     "uuid",
     "yaml",
