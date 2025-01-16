@@ -74,7 +74,7 @@ class Database:
             hives.remove(hive_to_remove)
         return hives
 
-    def _process_data(self, json, notification_method):
+    def _process_data(self, json, notification_method = None):
         """Extract and store the data values in the JSON from the Hawk."""
         try:
             serial_number = json["SerNo"]
@@ -123,11 +123,15 @@ class Database:
             all_previous_values = self.fetch_most_recent_values(serial_number)
         notification_method_arguments = []
         for hive in hives:
-            if notification_method is not None:
-                previous_values = all_previous_values[str(hive.hive_number)]
-                previous_weather_station_data = WeatherStationData(serial_number, previous_values[1], previous_values[2])
-                previous_hive_data = HiveData(previous_values[4], previous_values[5], previous_values[6], previous_values[7], previous_values[8], previous_values[9], previous_values[10], previous_values[11], previous_values[12], previous_values[13])
-                notification_method_arguments.append((weather_station, hive, previous_weather_station_data, previous_hive_data))
+            try:
+                if notification_method is not None:
+                    # Throws KeyError if there aren't any previous values
+                    previous_values = all_previous_values[str(hive.hive_number)]
+                    previous_weather_station_data = WeatherStationData(serial_number, previous_values[1], previous_values[2])
+                    previous_hive_data = HiveData(previous_values[4], previous_values[5], previous_values[6], previous_values[7], previous_values[8], previous_values[9], previous_values[10], previous_values[11], previous_values[12], previous_values[13])
+                    notification_method_arguments.append((weather_station, hive, previous_weather_station_data, previous_hive_data))
+            except KeyError:
+                continue
         with self.connection:
             print(hives)
             for hive in hives:
@@ -137,8 +141,9 @@ class Database:
                 self.connection.execute(
                     "INSERT INTO Data VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
                     (*weather_station.get_data(), *hive.get_data()))
-        for arguments in notification_method_arguments:
-            notification_method(*arguments)
+        if notification_method is not None:
+            for arguments in notification_method_arguments:
+                notification_method(*arguments)
 
     def fetch_field(self, serial_number, hive_number, field, start_time=0, end_time=None):
         """Return the time column and the given column.

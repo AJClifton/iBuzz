@@ -15,7 +15,10 @@ db = database.Database()
 login_db = login_database.LoginDatabase()
 login_manager = flask_login.LoginManager(app)
 login_manager.login_view = "login"
-notification = notifications.Notifications(config["notifications_email"], config["notifications_email_password"], login_db)
+try:
+    notification = notifications.Notifications(config["notifications_email"], config["notifications_email_password"], login_db)
+except Exception:
+    notification = None
 
 
 @app.route('/', methods=['GET'])
