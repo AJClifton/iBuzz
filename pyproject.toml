@@ -2,7 +2,10 @@
 name = "ibuzz"
 version = "0.0.1"
 dependencies = [
-    "flask"
+    "flask",
+    "flask-login",
+    "yaml",
+    "Werkzeug",
 ]
 
 [tool.setuptools.packages.find]
